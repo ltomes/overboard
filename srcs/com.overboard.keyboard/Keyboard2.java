@@ -1,0 +1,661 @@
+package com.overboard.keyboard;
+
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.res.Configuration;
+import android.inputmethodservice.InputMethodService;
+import android.os.Build.VERSION;
+import android.os.Handler;
+import android.os.IBinder;
+import android.provider.Settings;
+import android.text.InputType;
+import android.util.Log;
+import android.util.LogPrinter;
+import android.view.*;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputConnection;
+import android.view.inputmethod.InputMethodManager;
+import android.view.inputmethod.InputMethodSubtype;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import com.overboard.keyboard.dict.Dictionaries;
+import com.overboard.keyboard.dict.DictionariesActivity;
+import com.overboard.keyboard.prefs.LayoutsPreference;
+import com.overboard.keyboard.suggestions.CandidatesView;
+import juloo.cdict.Cdict;
+
+public class Keyboard2 extends InputMethodService
+  implements SharedPreferences.OnSharedPreferenceChangeListener
+{
+  /** The view containing the keyboard and candidates view. */
+  private ViewGroup _container_view;
+  private Keyboard2View _keyboardView;
+  private CandidatesView _candidates_view;
+  private KeyEventHandler _keyeventhandler;
+  /** If not 'null', the layout to use instead of [_config.current_layout]. */
+  private KeyboardData _currentSpecialLayout;
+  /** Layout associated with the currently selected locale. Not 'null'. */
+  private KeyboardData _localeTextLayout;
+  /** Installed and current locales. */
+  private DeviceLocales _device_locales;
+  private Dictionaries _dictionaries;
+  private ViewGroup _emojiPane = null;
+  private ViewGroup _clipboard_pane = null;
+  private Handler _handler;
+
+  private Config _config;
+
+  private FoldStateTracker _foldStateTracker;
+
+  /** Manages the overlay window for displaying the keyboard. */
+  private OverlayManager _overlayManager;
+  /** Zero-height placeholder returned to the IME framework so the host app
+      doesn't resize when the keyboard appears. */
+  private View _placeholderView;
+
+  /** Pending delayed show for overlay (Layer 1 of text-interaction protection). */
+  private Runnable _pendingShow;
+  /** Whether text was selected last time we checked (for selection-aware fade). */
+  private boolean _selectionActive;
+
+  /** Layout currently visible before it has been modified. */
+  KeyboardData current_layout_unmodified()
+  {
+    if (_currentSpecialLayout != null)
+      return _currentSpecialLayout;
+    KeyboardData layout = null;
+    int layout_i = _config.get_current_layout();
+    if (layout_i >= _config.layouts.size())
+      layout_i = 0;
+    if (layout_i < _config.layouts.size())
+      layout = _config.layouts.get(layout_i);
+    if (layout == null)
+      layout = _localeTextLayout;
+    return layout;
+  }
+
+  /** Layout currently visible. */
+  KeyboardData current_layout()
+  {
+    if (_currentSpecialLayout != null)
+      return _currentSpecialLayout;
+    return LayoutModifier.modify_layout(current_layout_unmodified());
+  }
+
+  void setTextLayout(int l)
+  {
+    _config.set_current_layout(l);
+    _currentSpecialLayout = null;
+    _keyboardView.setKeyboard(current_layout());
+  }
+
+  void incrTextLayout(int delta)
+  {
+    int s = _config.layouts.size();
+    setTextLayout((_config.get_current_layout() + delta + s) % s);
+  }
+
+  void setSpecialLayout(KeyboardData l)
+  {
+    _currentSpecialLayout = l;
+    _keyboardView.setKeyboard(l);
+  }
+
+  KeyboardData loadLayout(int layout_id)
+  {
+    return KeyboardData.load(getResources(), layout_id);
+  }
+
+  /** Load a layout that contains a numpad. */
+  KeyboardData loadNumpad(int layout_id)
+  {
+    return LayoutModifier.modify_numpad(KeyboardData.load(getResources(), layout_id),
+        current_layout_unmodified());
+  }
+
+  KeyboardData loadPinentry(int layout_id)
+  {
+    return LayoutModifier.modify_pinentry(KeyboardData.load(getResources(), layout_id),
+        current_layout_unmodified());
+  }
+
+  @Override
+  public void onCreate()
+  {
+    super.onCreate();
+    SharedPreferences prefs = DirectBootAwarePreferences.get_shared_preferences(this);
+    _handler = new Handler(getMainLooper());
+    _foldStateTracker = new FoldStateTracker(this);
+    _dictionaries = Dictionaries.instance(this);
+    Config.initGlobalConfig(prefs, getResources(),
+        _foldStateTracker.isUnfolded(), _dictionaries);
+    _config = Config.globalConfig();
+    _keyeventhandler = new KeyEventHandler(this.new Receiver(), _config);
+    _config.handler = _keyeventhandler;
+    prefs.registerOnSharedPreferenceChangeListener(this);
+    Logs.set_debug_logs(getResources().getBoolean(R.bool.debug_logs));
+    refreshSubtypeImm();
+    create_keyboard_view();
+    ClipboardHistoryService.on_startup(this, _keyeventhandler);
+    _foldStateTracker.setChangedCallback(() -> { refresh_config(); });
+    _overlayManager = new OverlayManager(this);
+    _overlayManager.setCollapseListener(() -> requestHideSelf(0));
+    _overlayManager.setDragListener(() -> _keyboardView.exitFadeModes());
+    _placeholderView = new View(this);
+    _placeholderView.setLayoutParams(new ViewGroup.LayoutParams(
+        ViewGroup.LayoutParams.MATCH_PARENT, 1));
+  }
+
+  @Override
+  public void onDestroy() {
+    super.onDestroy();
+    if (_overlayManager != null)
+      _overlayManager.hide();
+    _foldStateTracker.close();
+  }
+
+  private void create_keyboard_view()
+  {
+    _container_view = (ViewGroup)inflate_view(R.layout.keyboard);
+    _keyboardView = (Keyboard2View)_container_view.findViewById(R.id.keyboard_view);
+    _candidates_view = (CandidatesView)_container_view.findViewById(R.id.candidates_view);
+  }
+
+  InputMethodManager get_imm()
+  {
+    return (InputMethodManager)getSystemService(INPUT_METHOD_SERVICE);
+  }
+
+  private void refreshSubtypeImm()
+  {
+    _config.shouldOfferVoiceTyping = true;
+    KeyboardData default_layout = null;
+    _device_locales = DeviceLocales.load(this);
+    if (_device_locales.default_ != null)
+    {
+      String layout_name = _device_locales.default_.default_layout;
+      if (layout_name != null)
+        default_layout = LayoutsPreference.layout_of_string(getResources(), layout_name);
+    }
+    _config.extra_keys_subtype = _device_locales.extra_keys();
+    if (default_layout == null)
+      default_layout = loadLayout(R.xml.latn_qwerty_us);
+    _localeTextLayout = default_layout;
+  }
+
+  private void refresh_current_dictionary()
+  {
+    _config.current_dictionary = null;
+    String current = _device_locales.default_.dictionary;
+    if (current == null)
+      return;
+    Cdict[] dicts = _dictionaries.load(current);
+    if (dicts == null)
+      return;
+    _config.current_dictionary = Dictionaries.find_by_name(dicts, "main");
+  }
+
+  private void refresh_candidates_view()
+  {
+    boolean should_show =
+      _config.suggestions_enabled
+      && _config.editor_config.should_show_candidates_view;
+    if (should_show)
+      _candidates_view.refresh_config(_config);
+    _candidates_view.setVisibility(should_show ? View.VISIBLE : View.GONE);
+  }
+
+  /** Might re-create the keyboard view. [_keyboardView.setKeyboard()] and
+      [setInputView()] must be called soon after. */
+  private void refresh_config()
+  {
+    int prev_theme = _config.theme;
+    _config.refresh(getResources(), _foldStateTracker.isUnfolded(), _dictionaries);
+    refresh_current_dictionary();
+    // Refreshing the theme config requires re-creating the views
+    if (prev_theme != _config.theme)
+    {
+      create_keyboard_view();
+      _emojiPane = null;
+      _clipboard_pane = null;
+      if (useOverlayMode())
+      {
+        if (_overlayManager != null && _overlayManager.isShowing())
+          _overlayManager.replaceView(_container_view);
+      }
+      else
+      {
+        setInputView(_container_view);
+      }
+    }
+    // Set keyboard background opacity (on the keyboard view, not the
+    // container, so the candidates row stays transparent)
+    _keyboardView.getBackground().setAlpha(_config.keyboardOpacity);
+    _keyboardView.reset();
+    refresh_candidates_view();
+  }
+
+  private KeyboardData refresh_special_layout()
+  {
+    if (_config.editor_config.numeric_layout)
+    {
+      switch (_config.selected_number_layout)
+      {
+        case PIN: return loadPinentry(R.xml.pin);
+        case NUMBER: return loadNumpad(R.xml.numeric);
+      }
+    }
+    return null;
+  }
+
+  @Override
+  public View onCreateInputView()
+  {
+    // Return a zero-height placeholder so the host app doesn't resize.
+    // The actual keyboard is rendered in the overlay window.
+    return _placeholderView;
+  }
+
+  @Override
+  public void onComputeInsets(Insets outInsets)
+  {
+    super.onComputeInsets(outInsets);
+    if (useOverlayMode() && _overlayManager != null && _overlayManager.isShowing())
+    {
+      // In overlay mode the keyboard renders in a TYPE_APPLICATION_OVERLAY
+      // window, not inside the IME window.  The default insets (based on the
+      // tiny placeholder) report the keyboard as having no meaningful height,
+      // causing some apps (e.g. Discord) to immediately dismiss the soft
+      // input.  Report a minimal (1px) inset so the framework and apps see
+      // the IME as present without wasting screen real-estate on resize.
+      int screenHeight = getResources().getDisplayMetrics().heightPixels;
+      outInsets.contentTopInsets = screenHeight - 1;
+      outInsets.visibleTopInsets = screenHeight - 1;
+      // Empty touchable region so touches on the IME window area pass
+      // through to the app.  The overlay handles its own touches.
+      outInsets.touchableInsets = Insets.TOUCHABLE_INSETS_REGION;
+      outInsets.touchableRegion.setEmpty();
+    }
+  }
+
+  @Override
+  public void onStartInputView(EditorInfo info, boolean restarting)
+  {
+    _config.editor_config.refresh(info, getResources());
+    refresh_config();
+    _currentSpecialLayout = refresh_special_layout();
+    _keyboardView.setKeyboard(current_layout());
+    _keyeventhandler.started(_config);
+    cancelPendingShow();
+    if (useOverlayMode())
+    {
+      // Layer 3: Skip show when text is already selected (e.g. long-press
+      // selection in progress). The keyboard will appear later when the
+      // selection clears (handled in onUpdateSelection).
+      if (restarting
+          && info.initialSelStart >= 0 && info.initialSelEnd >= 0
+          && info.initialSelStart != info.initialSelEnd)
+        return;
+
+      // Layer 1: When restarting and the overlay is not already showing,
+      // delay the show by 400ms so that long-press menus and text selection
+      // handles have time to appear without the keyboard covering them.
+      if (restarting && !_overlayManager.isShowing())
+      {
+        _pendingShow = () -> {
+          _pendingShow = null;
+          _overlayManager.show(_container_view, _config.handedness,
+              _config.collapseButtonEnabled);
+        };
+        _handler.postDelayed(_pendingShow, 400);
+      }
+      else
+      {
+        _overlayManager.show(_container_view, _config.handedness,
+            _config.collapseButtonEnabled);
+      }
+    }
+    else
+    {
+      // Fallback: standard IME mode when overlay permission not granted.
+      // Hide the overlay in case permission was revoked while it was showing.
+      _overlayManager.hide();
+      setInputView(_container_view);
+    }
+    Logs.debug_startup_input_view(info, _config);
+  }
+
+  /** Whether to use overlay mode (permission is granted). */
+  private boolean useOverlayMode()
+  {
+    return Settings.canDrawOverlays(this);
+  }
+
+  @Override
+  public void setInputView(View v)
+  {
+    if (useOverlayMode() && v != _placeholderView)
+    {
+      // Redirect non-placeholder views (keyboard, emoji, clipboard) to overlay
+      if (_overlayManager != null && _overlayManager.isShowing())
+        _overlayManager.replaceView(v);
+      return;
+    }
+    ViewParent parent = v.getParent();
+    if (parent != null && parent instanceof ViewGroup)
+      ((ViewGroup)parent).removeView(v);
+    super.setInputView(v);
+    updateSoftInputWindowLayoutParams();
+    v.requestApplyInsets();
+  }
+
+  @Override
+  public void updateFullscreenMode() {
+    super.updateFullscreenMode();
+    updateSoftInputWindowLayoutParams();
+  }
+
+  private void updateSoftInputWindowLayoutParams() {
+    // In overlay mode the IME window holds only the zero-height placeholder.
+    // Leave it at its natural (zero) height so the framework doesn't see a
+    // full-screen empty window and immediately call onWindowHidden().
+    if (useOverlayMode()) return;
+    final Window window = getWindow().getWindow();
+    // On API >= 35, Keyboard2View behaves as edge-to-edge
+    // APIs 30 to 34 have visual artifact when edge-to-edge is enabled
+    if (VERSION.SDK_INT >= 35)
+    {
+      WindowManager.LayoutParams wattrs = window.getAttributes();
+      wattrs.layoutInDisplayCutoutMode =
+        WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
+      // Allow to draw behind system bars
+      wattrs.setFitInsetsTypes(0);
+      window.setDecorFitsSystemWindows(false);
+    }
+    updateLayoutHeightOf(window, ViewGroup.LayoutParams.MATCH_PARENT);
+    final View inputArea = window.findViewById(android.R.id.inputArea);
+
+    updateLayoutHeightOf(
+            (View) inputArea.getParent(),
+            isFullscreenMode()
+                    ? ViewGroup.LayoutParams.MATCH_PARENT
+                    : ViewGroup.LayoutParams.WRAP_CONTENT);
+    updateLayoutGravityOf((View) inputArea.getParent(), Gravity.BOTTOM);
+
+  }
+
+  private static void updateLayoutHeightOf(final Window window, final int layoutHeight) {
+    final WindowManager.LayoutParams params = window.getAttributes();
+    if (params != null && params.height != layoutHeight) {
+      params.height = layoutHeight;
+      window.setAttributes(params);
+    }
+  }
+
+  private static void updateLayoutHeightOf(final View view, final int layoutHeight) {
+    final ViewGroup.LayoutParams params = view.getLayoutParams();
+    if (params != null && params.height != layoutHeight) {
+      params.height = layoutHeight;
+      view.setLayoutParams(params);
+    }
+  }
+
+  private static void updateLayoutGravityOf(final View view, final int layoutGravity) {
+    final ViewGroup.LayoutParams lp = view.getLayoutParams();
+    if (lp instanceof LinearLayout.LayoutParams) {
+      final LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) lp;
+      if (params.gravity != layoutGravity) {
+        params.gravity = layoutGravity;
+        view.setLayoutParams(params);
+      }
+    } else if (lp instanceof FrameLayout.LayoutParams) {
+      final FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) lp;
+      if (params.gravity != layoutGravity) {
+        params.gravity = layoutGravity;
+        view.setLayoutParams(params);
+      }
+    }
+  }
+
+  @Override
+  public void onConfigurationChanged(Configuration newConfig)
+  {
+    super.onConfigurationChanged(newConfig);
+    if (_overlayManager != null && _overlayManager.isShowing())
+      _overlayManager.updateLayout();
+  }
+
+  @Override
+  public void onCurrentInputMethodSubtypeChanged(InputMethodSubtype subtype)
+  {
+    refreshSubtypeImm();
+    refresh_candidates_view();
+    _keyboardView.setKeyboard(current_layout());
+  }
+
+  @Override
+  public void onUpdateSelection(int oldSelStart, int oldSelEnd, int newSelStart, int newSelEnd, int candidatesStart, int candidatesEnd)
+  {
+    super.onUpdateSelection(oldSelStart, oldSelEnd, newSelStart, newSelEnd, candidatesStart, candidatesEnd);
+    _keyeventhandler.selection_updated(oldSelStart, newSelStart, newSelEnd);
+    if ((oldSelStart == oldSelEnd) != (newSelStart == newSelEnd))
+      _keyboardView.set_selection_state(newSelStart != newSelEnd);
+
+    // Layer 2: Selection-aware auto-fade — fade the keyboard when the user
+    // selects text, restore when the selection clears.
+    boolean hasSelection = newSelStart >= 0 && newSelEnd >= 0
+        && newSelStart != newSelEnd;
+    if (hasSelection != _selectionActive)
+    {
+      _selectionActive = hasSelection;
+      _keyboardView.setSelectionFade(hasSelection);
+      // Layer 3 (continued): If the overlay was skipped because text was
+      // selected, show it now that the selection has cleared.
+      if (!hasSelection && useOverlayMode()
+          && _overlayManager != null && !_overlayManager.isShowing())
+      {
+        _overlayManager.show(_container_view, _config.handedness,
+            _config.collapseButtonEnabled);
+      }
+    }
+  }
+
+  @Override
+  public void onFinishInputView(boolean finishingInput)
+  {
+    super.onFinishInputView(finishingInput);
+    cancelPendingShow();
+    _selectionActive = false;
+    _keyboardView.reset();
+    if (_overlayManager != null)
+      _overlayManager.hide();
+  }
+
+  @Override
+  public void onWindowHidden()
+  {
+    super.onWindowHidden();
+    cancelPendingShow();
+    _selectionActive = false;
+    if (_overlayManager != null)
+      _overlayManager.hide();
+  }
+
+  private void cancelPendingShow()
+  {
+    if (_pendingShow != null)
+    {
+      _handler.removeCallbacks(_pendingShow);
+      _pendingShow = null;
+    }
+  }
+
+  @Override
+  public void onSharedPreferenceChanged(SharedPreferences _prefs, String _key)
+  {
+    refresh_config();
+    _keyboardView.setKeyboard(current_layout());
+  }
+
+  @Override
+  public boolean onEvaluateFullscreenMode()
+  {
+    /* Entirely disable fullscreen mode. */
+    return false;
+  }
+
+  /** Called from [onClick] attributes. */
+  public void launch_dictionaries_activity(View v)
+  {
+    start_activity(DictionariesActivity.class);
+  }
+
+  void start_activity(Class cls)
+  {
+    Intent intent = new Intent(this, cls);
+    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+    startActivity(intent);
+  }
+
+  /** Not static */
+  public class Receiver implements KeyEventHandler.IReceiver
+  {
+    public void handle_event_key(KeyValue.Event ev)
+    {
+      switch (ev)
+      {
+        case CONFIG:
+          start_activity(SettingsActivity.class);
+          break;
+
+        case SWITCH_TEXT:
+          _currentSpecialLayout = null;
+          _keyboardView.setKeyboard(current_layout());
+          break;
+
+        case SWITCH_NUMERIC:
+          setSpecialLayout(loadNumpad(R.xml.numeric));
+          break;
+
+        case SWITCH_EMOJI:
+          if (_emojiPane == null)
+            _emojiPane = (ViewGroup)inflate_view(R.layout.emoji_pane);
+          setInputView(_emojiPane);
+          break;
+
+        case SWITCH_CLIPBOARD:
+          if (_clipboard_pane == null)
+            _clipboard_pane = (ViewGroup)inflate_view(R.layout.clipboard_pane);
+          setInputView(_clipboard_pane);
+          break;
+
+        case SWITCH_BACK_EMOJI:
+        case SWITCH_BACK_CLIPBOARD:
+          setInputView(_container_view);
+          break;
+
+        case CHANGE_METHOD_PICKER:
+          get_imm().showInputMethodPicker();
+          break;
+
+        case CHANGE_METHOD_PREV:
+          if (VERSION.SDK_INT < 28)
+            get_imm().switchToLastInputMethod(getConnectionToken());
+          else
+            switchToPreviousInputMethod();
+          break;
+
+        case CHANGE_METHOD_NEXT:
+          if (VERSION.SDK_INT < 28)
+            get_imm().switchToNextInputMethod(getConnectionToken(), false);
+          else
+            switchToNextInputMethod(false);
+          break;
+
+        case ACTION:
+          InputConnection conn = getCurrentInputConnection();
+          if (conn != null)
+            conn.performEditorAction(_config.editor_config.actionId);
+          break;
+
+        case SWITCH_FORWARD:
+          incrTextLayout(1);
+          break;
+
+        case SWITCH_BACKWARD:
+          incrTextLayout(-1);
+          break;
+
+        case SWITCH_GREEKMATH:
+          setSpecialLayout(loadNumpad(R.xml.greekmath));
+          break;
+
+        case CAPS_LOCK:
+          set_shift_state(true, true);
+          break;
+
+        case SWITCH_VOICE_TYPING:
+          if (!VoiceImeSwitcher.switch_to_voice_ime(Keyboard2.this, get_imm(),
+                Config.globalPrefs()))
+            _config.shouldOfferVoiceTyping = false;
+          break;
+
+        case SWITCH_VOICE_TYPING_CHOOSER:
+          VoiceImeSwitcher.choose_voice_ime(Keyboard2.this, get_imm(),
+              Config.globalPrefs());
+          break;
+
+        case TOGGLE_PEEK:
+          _keyboardView.togglePeekMode();
+          break;
+      }
+    }
+
+    public void set_shift_state(boolean state, boolean lock)
+    {
+      _keyboardView.set_shift_state(state, lock);
+    }
+
+    public void set_compose_pending(boolean pending)
+    {
+      _keyboardView.set_compose_pending(pending);
+    }
+
+    public void selection_state_changed(boolean selection_is_ongoing)
+    {
+      _keyboardView.set_selection_state(selection_is_ongoing);
+    }
+
+    public InputConnection getCurrentInputConnection()
+    {
+      return Keyboard2.this.getCurrentInputConnection();
+    }
+
+    public Handler getHandler()
+    {
+      return _handler;
+    }
+
+    public void set_suggestions(List<String> suggestions)
+    {
+      _candidates_view.set_candidates(suggestions);
+    }
+  }
+
+  private IBinder getConnectionToken()
+  {
+    return getWindow().getWindow().getAttributes().token;
+  }
+
+  private View inflate_view(int layout)
+  {
+    return View.inflate(new ContextThemeWrapper(this, _config.theme), layout, null);
+  }
+}

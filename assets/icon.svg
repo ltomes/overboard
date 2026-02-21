@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108 108" width="256" height="256">
+  <defs>
+    <clipPath id="rounded">
+      <rect x="4" y="4" width="100" height="100" rx="22"/>
+    </clipPath>
+  </defs>
+
+  <!-- Background -->
+  <rect x="4" y="4" width="100" height="100" rx="22" fill="#1a1a2e"/>
+
+  <g clip-path="url(#rounded)">
+    <!-- App content rectangle (behind keyboard) -->
+    <path fill="#44ffffff" d="M22,20h64v40q0,4 -4,4h-56q-4,0 -4,-4z"/>
+
+    <!-- Horizontal lines representing text content -->
+    <line x1="28" y1="28" x2="68" y2="28" stroke="#33ffffff" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="28" y1="35" x2="80" y2="35" stroke="#33ffffff" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="28" y1="42" x2="64" y2="42" stroke="#33ffffff" stroke-width="2.5" stroke-linecap="round"/>
+
+    <!-- Keyboard body -->
+    <path fill="#cc222222" d="M18,48h72v36q0,4 -4,4h-64q-4,0 -4,-4z"/>
+
+    <!-- Row 1 keys -->
+    <path fill="#aa444444" d="M22,51h8v8q0,1 -1,1h-6q-1,0 -1,-1z"/>
+    <path fill="#aa444444" d="M32,51h8v8q0,1 -1,1h-6q-1,0 -1,-1z"/>
+    <path fill="#aa444444" d="M42,51h8v8q0,1 -1,1h-6q-1,0 -1,-1z"/>
+    <path fill="#aa444444" d="M52,51h8v8q0,1 -1,1h-6q-1,0 -1,-1z"/>
+    <path fill="#aa444444" d="M62,51h8v8q0,1 -1,1h-6q-1,0 -1,-1z"/>
+    <path fill="#aa444444" d="M72,51h8v8q0,1 -1,1h-6q-1,0 -1,-1z"/>
+    <path fill="#aa444444" d="M82,51h4v8q0,1 -1,1h-2q-1,0 -1,-1z"/>
+
+    <!-- Row 2 keys -->
+    <path fill="#aa444444" d="M22,62h8v8q0,1 -1,1h-6q-1,0 -1,-1z"/>
+    <path fill="#aa444444" d="M32,62h8v8q0,1 -1,1h-6q-1,0 -1,-1z"/>
+    <path fill="#aa444444" d="M42,62h8v8q0,1 -1,1h-6q-1,0 -1,-1z"/>
+    <path fill="#aa444444" d="M52,62h8v8q0,1 -1,1h-6q-1,0 -1,-1z"/>
+    <path fill="#aa444444" d="M62,62h8v8q0,1 -1,1h-6q-1,0 -1,-1z"/>
+    <path fill="#aa444444" d="M72,62h8v8q0,1 -1,1h-6q-1,0 -1,-1z"/>
+    <path fill="#aa444444" d="M82,62h4v8q0,1 -1,1h-2q-1,0 -1,-1z"/>
+
+    <!-- Row 3: spacebar row -->
+    <path fill="#aa444444" d="M22,73h8v8q0,1 -1,1h-6q-1,0 -1,-1z"/>
+    <path fill="#aa555555" d="M32,73h38v8q0,1 -1,1h-36q-1,0 -1,-1z"/>
+    <path fill="#aa444444" d="M72,73h14v8q0,1 -1,1h-12q-1,0 -1,-1z"/>
+
+    <!-- Key labels -->
+    <path fill="none" stroke="#ccffffff" stroke-width="0.8" stroke-linecap="round" stroke-linejoin="round" d="M25,57.5l1,-3 1,3"/>
+    <path fill="none" stroke="#ccffffff" stroke-width="0.8" stroke-linecap="round" stroke-linejoin="round" d="M45,57.5l1,-3 1,3"/>
+
+    <!-- Diagonal transparency stripes -->
+    <line x1="18" y1="72" x2="42" y2="48" stroke="#18ffffff" stroke-width="3" stroke-linecap="round"/>
+    <line x1="18" y1="84" x2="58" y2="48" stroke="#18ffffff" stroke-width="3" stroke-linecap="round"/>
+    <line x1="30" y1="88" x2="74" y2="48" stroke="#18ffffff" stroke-width="3" stroke-linecap="round"/>
+    <line x1="50" y1="88" x2="90" y2="52" stroke="#18ffffff" stroke-width="3" stroke-linecap="round"/>
+  </g>
+</svg>

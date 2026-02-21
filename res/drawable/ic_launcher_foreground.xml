@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:height="108dp"
+    android:width="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+  <!-- App content rectangle (behind keyboard) -->
+  <path
+      android:fillColor="#44ffffff"
+      android:pathData="M22,20h64v40q0,4 -4,4h-56q-4,0 -4,-4z"/>
+
+  <!-- Horizontal lines representing text content -->
+  <path
+      android:pathData="M28,28h40"
+      android:strokeColor="#33ffffff"
+      android:strokeWidth="2.5"
+      android:strokeLineCap="round"/>
+  <path
+      android:pathData="M28,35h52"
+      android:strokeColor="#33ffffff"
+      android:strokeWidth="2.5"
+      android:strokeLineCap="round"/>
+  <path
+      android:pathData="M28,42h36"
+      android:strokeColor="#33ffffff"
+      android:strokeWidth="2.5"
+      android:strokeLineCap="round"/>
+
+  <!-- Keyboard body (overlapping content, semi-transparent) -->
+  <path
+      android:fillColor="#cc222222"
+      android:pathData="M18,48h72v36q0,4 -4,4h-64q-4,0 -4,-4z"/>
+
+  <!-- Row 1: QWERTY-ish key shapes -->
+  <path
+      android:fillColor="#aa444444"
+      android:pathData="M22,51h8v8q0,1 -1,1h-6q-1,0 -1,-1z"/>
+  <path
+      android:fillColor="#aa444444"
+      android:pathData="M32,51h8v8q0,1 -1,1h-6q-1,0 -1,-1z"/>
+  <path
+      android:fillColor="#aa444444"
+      android:pathData="M42,51h8v8q0,1 -1,1h-6q-1,0 -1,-1z"/>
+  <path
+      android:fillColor="#aa444444"
+      android:pathData="M52,51h8v8q0,1 -1,1h-6q-1,0 -1,-1z"/>
+  <path
+      android:fillColor="#aa444444"
+      android:pathData="M62,51h8v8q0,1 -1,1h-6q-1,0 -1,-1z"/>
+  <path
+      android:fillColor="#aa444444"
+      android:pathData="M72,51h8v8q0,1 -1,1h-6q-1,0 -1,-1z"/>
+  <path
+      android:fillColor="#aa444444"
+      android:pathData="M82,51h4v8q0,1 -1,1h-2q-1,0 -1,-1z"/>
+
+  <!-- Row 2 -->
+  <path
+      android:fillColor="#aa444444"
+      android:pathData="M22,62h8v8q0,1 -1,1h-6q-1,0 -1,-1z"/>
+  <path
+      android:fillColor="#aa444444"
+      android:pathData="M32,62h8v8q0,1 -1,1h-6q-1,0 -1,-1z"/>
+  <path
+      android:fillColor="#aa444444"
+      android:pathData="M42,62h8v8q0,1 -1,1h-6q-1,0 -1,-1z"/>
+  <path
+      android:fillColor="#aa444444"
+      android:pathData="M52,62h8v8q0,1 -1,1h-6q-1,0 -1,-1z"/>
+  <path
+      android:fillColor="#aa444444"
+      android:pathData="M62,62h8v8q0,1 -1,1h-6q-1,0 -1,-1z"/>
+  <path
+      android:fillColor="#aa444444"
+      android:pathData="M72,62h8v8q0,1 -1,1h-6q-1,0 -1,-1z"/>
+  <path
+      android:fillColor="#aa444444"
+      android:pathData="M82,62h4v8q0,1 -1,1h-2q-1,0 -1,-1z"/>
+
+  <!-- Row 3: spacebar row -->
+  <path
+      android:fillColor="#aa444444"
+      android:pathData="M22,73h8v8q0,1 -1,1h-6q-1,0 -1,-1z"/>
+  <path
+      android:fillColor="#aa555555"
+      android:pathData="M32,73h38v8q0,1 -1,1h-36q-1,0 -1,-1z"/>
+  <path
+      android:fillColor="#aa444444"
+      android:pathData="M72,73h14v8q0,1 -1,1h-12q-1,0 -1,-1z"/>
+
+  <!-- Key labels (tiny letters on a few keys) -->
+  <path
+      android:fillColor="#ccffffff"
+      android:pathData="M25,57.5l1,-3 1,3"
+      android:strokeColor="#ccffffff"
+      android:strokeWidth="0.8"
+      android:strokeLineCap="round"
+      android:strokeLineJoin="round"/>
+  <path
+      android:fillColor="#00000000"
+      android:pathData="M45,57.5l1,-3 1,3"
+      android:strokeColor="#ccffffff"
+      android:strokeWidth="0.8"
+      android:strokeLineCap="round"
+      android:strokeLineJoin="round"/>
+
+  <!-- Diagonal transparency stripes on the keyboard (overlay indicator) -->
+  <path
+      android:pathData="M18,72L42,48"
+      android:strokeColor="#18ffffff"
+      android:strokeWidth="3"
+      android:strokeLineCap="round"/>
+  <path
+      android:pathData="M18,84L58,48"
+      android:strokeColor="#18ffffff"
+      android:strokeWidth="3"
+      android:strokeLineCap="round"/>
+  <path
+      android:pathData="M30,88L74,48"
+      android:strokeColor="#18ffffff"
+      android:strokeWidth="3"
+      android:strokeLineCap="round"/>
+  <path
+      android:pathData="M50,88L90,52"
+      android:strokeColor="#18ffffff"
+      android:strokeWidth="3"
+      android:strokeLineCap="round"/>
+
+</vector>
