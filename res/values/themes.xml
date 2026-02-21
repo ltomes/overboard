@@ -7,8 +7,26 @@
     <attr name="colorKey" format="color"/>
     <!-- Background of the keys when pressed -->
     <attr name="colorKeyActivated" format="color"/>
+    <!-- Background of modifier / non-alpha keys (0 = use colorKey) -->
+    <attr name="colorKeyModifier" format="color"/>
+    <!-- Background of modifier / non-alpha keys when pressed (0 = use colorKeyActivated) -->
+    <attr name="colorKeyModifierActivated" format="color"/>
+    <!-- Background of accent keys like Enter/Esc (0 = use colorKey) -->
+    <attr name="colorKeyAccent" format="color"/>
+    <!-- Background of accent keys when pressed (0 = use colorKeyActivated) -->
+    <attr name="colorKeyAccentActivated" format="color"/>
+    <!-- Dimple dot color for injection-molded texture (0 = disabled) -->
+    <attr name="colorKeyDimple" format="color"/>
     <!-- Label colors -->
     <attr name="colorLabel" format="color"/>
+    <!-- Label color on modifier keys (0 = use colorLabel) -->
+    <attr name="colorLabelModifier" format="color"/>
+    <!-- Sub-label color on modifier keys (0 = use colorSubLabel) -->
+    <attr name="colorSubLabelModifier" format="color"/>
+    <!-- Label color on accent keys (0 = use colorLabel) -->
+    <attr name="colorLabelAccent" format="color"/>
+    <!-- Sub-label color on accent keys (0 = use colorSubLabel) -->
+    <attr name="colorSubLabelAccent" format="color"/>
     <attr name="colorLabelActivated" format="color"/>
     <attr name="colorLabelLocked" format="color"/>
     <attr name="secondaryDimming" format="float"/>
@@ -295,22 +313,35 @@
     <item name="clipboard_divider_color">?colorLabel</item>
     <item name="clipboard_divider_height">2dp</item>
  </style>
- <!-- MT3 /dev/tty — warm beige PBT alphas (#D0CCBB), warm gray modifiers (#8C8880),
-      dark charcoal dye-sub legends (#3D3C39); olive Triumph accent kit (#7B7D5A) used
-      as the activated key color. This is a light theme. -->
+ <!-- MT3 /dev/tty by Matt3o — warm beige PBT alphas (#D0CCBB), warm gray modifiers (#8C8880),
+      dark charcoal dye-sub legends (#3D3C39); classic red accent keys (#C03030) for
+      activated state matching ESC/Return accent kit. This is a light theme. -->
  <style name="MitoTTY" parent="BaseTheme">
     <item name="android:isLightTheme">true</item>
     <!-- Warm gray background matching modifier key tone (~#8C8880) -->
     <item name="colorKeyboard">#b0aca4</item>
     <!-- Warm beige alpha key color (~#D0CCBB) — the dominant alpha color -->
     <item name="colorKey">#d0ccbb</item>
-    <!-- Muted olive Triumph accent color (~#7B7D5A) for activated keys -->
-    <item name="colorKeyActivated">#7b7d5a</item>
+    <!-- TTY red accent (~#C03030) for activated keys, matching the classic red
+         ESC/Return accent kit from /dev/tty -->
+    <item name="colorKeyActivated">#c03030</item>
+    <!-- Warm gray modifier keys — distinctly darker than beige alphas -->
+    <item name="colorKeyModifier">#8a8678</item>
+    <item name="colorKeyModifierActivated">#c03030</item>
+    <!-- Red accent keys (Enter, Esc) matching the /dev/tty accent kit -->
+    <item name="colorKeyAccent">#c03030</item>
+    <item name="colorKeyAccentActivated">#901818</item>
+    <!-- Cream legends on gray mod bodies for readability -->
+    <item name="colorLabelModifier">#e0dcd0</item>
+    <item name="colorSubLabelModifier">#c0bcab</item>
+    <!-- White legends on red accent keys -->
+    <item name="colorLabelAccent">#ffffff</item>
+    <item name="colorSubLabelAccent">#f0d0d0</item>
     <!-- Dark charcoal legends (~#3D3C39), matching dye-sublimated PBT legends -->
     <item name="colorLabel">#3d3c39</item>
-    <!-- Light cream on olive when key is pressed -->
-    <item name="colorLabelActivated">#e0dcd0</item>
-    <!-- Dark olive for locked state (caps lock) -->
+    <!-- White legends on red activated keys for high contrast -->
+    <item name="colorLabelActivated">#ffffff</item>
+    <!-- Olive Triumph accent for locked state (caps lock) -->
     <item name="colorLabelLocked">#4e5038</item>
     <!-- Medium warm gray sub-labels, matching modifier key tone -->
     <item name="colorSubLabel">#5a5850</item>
@@ -335,6 +366,12 @@
     <item name="colorKey">#171718</item>
     <!-- Mitolet violet for activated keys (~#5D437E brightened for visibility) -->
     <item name="colorKeyActivated">#7040a0</item>
+    <!-- Rich dark teal modifier keys matching SA/GMK Pulse mod bodies (TU2) -->
+    <item name="colorKeyModifier">#006068</item>
+    <item name="colorKeyModifierActivated">#7040a0</item>
+    <!-- Dark legends on teal mod bodies (turquoise-on-teal would be invisible) -->
+    <item name="colorLabelModifier">#0a1a1c</item>
+    <item name="colorSubLabelModifier">#0a3035</item>
     <!-- GMK TU2 turquoise legends (~#00A4A9) — the bright mod color -->
     <item name="colorLabel">#00a4a9</item>
     <item name="colorLabelActivated">#ffffff</item>
@@ -363,6 +400,9 @@
     <item name="colorKey">#280040</item>
     <!-- Searing hot pink when activated -->
     <item name="colorKeyActivated">#e0005a</item>
+    <!-- Brighter purple modifier keys — clearly distinct from dark alpha -->
+    <item name="colorKeyModifier">#480080</item>
+    <item name="colorKeyModifierActivated">#e0005a</item>
     <!-- Neon pink legends, matching the searing pink legend color -->
     <item name="colorLabel">#ff40a0</item>
     <!-- Cyber yellow when activated, referencing the yellow accent kit -->
@@ -389,6 +429,8 @@
     <!-- Lighter blue-grey key faces, simulating the translucent ABS -->
     <item name="colorKey">#d8e4ef</item>
     <item name="colorKeyActivated">#8aa0b8</item>
+    <!-- Dimple dots simulating dual-injection molding texture -->
+    <item name="colorKeyDimple">#c8d8e8</item>
     <!-- Near-black legends like the white WS1 legends on the clear base appear as dark silhouettes -->
     <item name="colorLabel">#1a2030</item>
     <item name="colorLabelActivated">#003090</item>
@@ -406,24 +448,29 @@
     <item name="emoji_button_bg">#d8e4ef</item>
     <item name="emoji_color">#1a2030</item>
  </style>
- <!-- Tai-Hao Miami PBT — official SKU C02BU201. "Bright Blue" teal (~#00B4C8) and
-      "Pink" hot pink (~#FF6F91) doubleshot PBT; legends are the inverse color of the key body.
-      Teal keys carry pink legends; pink keys carry teal legends. -->
+ <!-- Tai-Hao Miami PBT — official SKU C22BU201. Teal alphas (~#00B4C8) with pink
+      legends; pink modifiers (~#FF6F91) with teal legends. Doubleshot PBT. -->
  <style name="TaiHaoMiami" parent="BaseTheme">
     <item name="android:isLightTheme">true</item>
     <!-- Light off-white background approximating the PBT base surface -->
     <item name="colorKeyboard">#e8e8e8</item>
-    <!-- Teal key bodies ("Bright Blue", ~#00B4C8 to #29B8C1) -->
+    <!-- Teal alpha key bodies -->
     <item name="colorKey">#00b4c8</item>
-    <!-- Hot pink when pressed ("Pink", ~#FF6F91) — the opposite Miami color -->
-    <item name="colorKeyActivated">#ff6f91</item>
-    <!-- Hot pink primary legends on teal key bodies (~#FF6F91) -->
+    <!-- Teal darkens when pressed -->
+    <item name="colorKeyActivated">#008898</item>
+    <!-- Pink modifier key bodies (Shift, Ctrl, Backspace, etc.) -->
+    <item name="colorKeyModifier">#ff6f91</item>
+    <item name="colorKeyModifierActivated">#cc4870</item>
+    <!-- Pink legends on teal alpha keys -->
     <item name="colorLabel">#ff6f91</item>
-    <!-- Teal legends on hot-pink activated key -->
-    <item name="colorLabelActivated">#00b4c8</item>
+    <!-- White legends when pressed for visibility -->
+    <item name="colorLabelActivated">#ffffff</item>
     <!-- Hot pink for locked state -->
     <item name="colorLabelLocked">#ff6f91</item>
-    <!-- Teal sub-labels, replicating how the two colors interchange across the key face -->
+    <!-- Teal legends on pink modifier keys (color-inverted) -->
+    <item name="colorLabelModifier">#00b4c8</item>
+    <item name="colorSubLabelModifier">#008898</item>
+    <!-- Darker teal sub-labels on alpha keys -->
     <item name="colorSubLabel">#007e8c</item>
     <!-- Subtle borders for OEM-profile PBT; darker bottom edge for slight depth -->
     <item name="keyBorderWidth">0.8dp</item>

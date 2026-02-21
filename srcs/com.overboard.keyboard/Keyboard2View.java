@@ -28,6 +28,7 @@ import android.view.WindowManager;
 import android.view.WindowMetrics;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 
 public class Keyboard2View extends View
   implements View.OnTouchListener, Pointers.IPointerEventHandler
@@ -96,6 +97,14 @@ public class Keyboard2View extends View
       reset();
     else
       setKeyboard(KeyboardData.load(getResources(), layout_id));
+  }
+
+  /** Re-apply a theme style. Used by snapshot tests. */
+  public void applyThemeStyle(int defStyleRes)
+  {
+    _theme = new Theme(getContext(), null, defStyleRes);
+    requestLayout();
+    invalidate();
   }
 
   private Window getParentWindow(Context context)
@@ -414,14 +423,24 @@ public class Keyboard2View extends View
         x += k.shift * _keyWidth;
         float keyW = _keyWidth * k.width - _tc.horizontal_margin;
         boolean isKeyDown = _pointers.isKeyDown(k);
-        Theme.Computed.Key tc_key = isKeyDown ? _tc.key_activated : _tc.key;
+        boolean isAccent = isAccentKey(k);
+        boolean isMod = !isAccent && isModifierStyleKey(k);
+        Theme.Computed.Key tc_key;
+        if (isAccent)
+          tc_key = isKeyDown ? _tc.key_accent_activated : _tc.key_accent;
+        else if (isMod)
+          tc_key = isKeyDown ? _tc.key_modifier_activated : _tc.key_modifier;
+        else
+          tc_key = isKeyDown ? _tc.key_activated : _tc.key;
         drawKeyFrame(canvas, x, y, keyW, keyH, tc_key);
+        if (_tc.dimple_paint != null)
+          drawKeyDimples(canvas, x, y, keyW, keyH, tc_key);
         if (k.keys[0] != null)
-          drawLabel(canvas, k.keys[0], keyW / 2f + x, y, keyH, isKeyDown, tc_key);
+          drawLabel(canvas, k.keys[0], keyW / 2f + x, y, keyH, isKeyDown, isMod, isAccent, tc_key);
         for (int i = 1; i < 9; i++)
         {
           if (k.keys[i] != null)
-            drawSubLabel(canvas, k.keys[i], x, y, keyW, keyH, i, isKeyDown, tc_key);
+            drawSubLabel(canvas, k.keys[i], x, y, keyW, keyH, i, isKeyDown, isMod, isAccent, tc_key);
         }
         drawIndication(canvas, k, x, y, keyW, keyH, _tc);
         x += _keyWidth * k.width;
@@ -552,7 +571,8 @@ public class Keyboard2View extends View
     canvas.restore();
   }
 
-  private int labelColor(KeyValue k, boolean isKeyDown, boolean sublabel)
+  private int labelColor(KeyValue k, boolean isKeyDown, boolean sublabel,
+      boolean isModifier, boolean isAccent)
   {
     if (isKeyDown)
     {
@@ -570,18 +590,33 @@ public class Keyboard2View extends View
         return _theme.greyedLabelColor;
       return _theme.secondaryLabelColor;
     }
+    if (isAccent)
+    {
+      if (sublabel && _theme.subLabelAccentColor != 0)
+        return _theme.subLabelAccentColor;
+      if (!sublabel && _theme.labelAccentColor != 0)
+        return _theme.labelAccentColor;
+    }
+    if (isModifier)
+    {
+      if (sublabel && _theme.subLabelModifierColor != 0)
+        return _theme.subLabelModifierColor;
+      if (!sublabel && _theme.labelModifierColor != 0)
+        return _theme.labelModifierColor;
+    }
     return sublabel ? _theme.subLabelColor : _theme.labelColor;
   }
 
   private void drawLabel(Canvas canvas, KeyValue kv, float x, float y,
-      float keyH, boolean isKeyDown, Theme.Computed.Key tc)
+      float keyH, boolean isKeyDown, boolean isModifier, boolean isAccent,
+      Theme.Computed.Key tc)
   {
     kv = modifyKey(kv, _mods);
     if (kv == null)
       return;
     float textSize = scaleTextSize(kv, true);
     boolean specialFont = kv.hasFlagsAny(KeyValue.FLAG_KEY_FONT);
-    int color = labelColor(kv, isKeyDown, false);
+    int color = labelColor(kv, isKeyDown, false, isModifier, isAccent);
     Paint p = tc.label_paint(specialFont, color, textSize);
     float textY = (keyH - p.ascent() - p.descent()) / 2f + y;
     if (tc._outline_enabled)
@@ -594,7 +629,7 @@ public class Keyboard2View extends View
 
   private void drawSubLabel(Canvas canvas, KeyValue kv, float x, float y,
       float keyW, float keyH, int sub_index, boolean isKeyDown,
-      Theme.Computed.Key tc)
+      boolean isModifier, boolean isAccent, Theme.Computed.Key tc)
   {
     Paint.Align a = LABEL_POSITION_H[sub_index];
     Vertical v = LABEL_POSITION_V[sub_index];
@@ -603,7 +638,7 @@ public class Keyboard2View extends View
       return;
     float textSize = scaleTextSize(kv, false);
     boolean specialFont = kv.hasFlagsAny(KeyValue.FLAG_KEY_FONT);
-    int color = labelColor(kv, isKeyDown, true);
+    int color = labelColor(kv, isKeyDown, true, isModifier, isAccent);
     Paint p = tc.sublabel_paint(specialFont, color, textSize, a);
     float subPadding = _config.keyPadding;
     float textY = y;
@@ -637,6 +672,62 @@ public class Keyboard2View extends View
     p.setTextSize(_subLabelSize);
     canvas.drawText(k.indication, 0, k.indication.length(),
         x + keyW / 2f, (keyH - p.ascent() - p.descent()) * 4/5 + y, p);
+  }
+
+  /** Returns true if this key should use the modifier background color.
+      Alpha keys (a-z) use the normal background; everything else is modifier-style. */
+  static boolean isModifierStyleKey(KeyboardData.Key k)
+  {
+    if (k.keys[0] == null)
+      return true;
+    KeyValue kv = k.keys[0];
+    if (kv.getKind() == KeyValue.Kind.Char && Character.isLetter(kv.getChar()))
+      return false;
+    return true;
+  }
+
+  /** Accent keys get a distinct color (e.g. red Enter/Esc on /dev/tty). */
+  static boolean isAccentKey(KeyboardData.Key k)
+  {
+    if (k.keys[0] == null)
+      return false;
+    KeyValue kv = k.keys[0];
+    if (kv.getKind() == KeyValue.Kind.Keyevent)
+    {
+      int code = kv.getKeyevent();
+      return code == android.view.KeyEvent.KEYCODE_ENTER
+          || code == android.view.KeyEvent.KEYCODE_ESCAPE;
+    }
+    if (kv.getKind() == KeyValue.Kind.Event
+        && kv.getEvent() == KeyValue.Event.ACTION)
+      return true;
+    return false;
+  }
+
+  /** Draw scattered dimple dots on a key face (for injection-molding themes). */
+  void drawKeyDimples(Canvas canvas, float x, float y, float keyW, float keyH,
+      Theme.Computed.Key tc)
+  {
+    float w = tc.border_width;
+    float inset = w + 2f;
+    float innerW = keyW - inset * 2;
+    float innerH = keyH - inset * 2;
+    if (innerW <= 0 || innerH <= 0)
+      return;
+    // Deterministic seed from position so pattern is stable across redraws
+    long seed = Float.floatToIntBits(x) * 31L + Float.floatToIntBits(y);
+    Random rng = new Random(seed);
+    // Scale dot count by key area relative to a standard key
+    float refArea = _keyWidth * _tc.row_height;
+    int dotCount = Math.max(4, (int)(20 * (innerW * innerH) / refArea));
+    float density = getResources().getDisplayMetrics().density;
+    float dotRadius = 1.5f * density;
+    for (int i = 0; i < dotCount; i++)
+    {
+      float dx = x + inset + rng.nextFloat() * innerW;
+      float dy = y + inset + rng.nextFloat() * innerH;
+      canvas.drawCircle(dx, dy, dotRadius, _tc.dimple_paint);
+    }
   }
 
   private float scaleTextSize(KeyValue k, boolean main_label)

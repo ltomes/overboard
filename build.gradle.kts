@@ -3,6 +3,7 @@ import java.io.FileOutputStream
 
 plugins {
   id("com.android.application") version "8.13.2"
+  id("app.cash.paparazzi") version "1.3.5"
 }
 
 dependencies {
@@ -108,7 +109,7 @@ val buildKeyboardFont by tasks.registering(Exec::class) {
 val genEmojis by tasks.registering(Exec::class) {
   doFirst { println("\nGenerating res/raw/emojis.txt") }
   workingDir = projectDir
-  commandLine("python", "gen_emoji.py")
+  commandLine("python3", "gen_emoji.py")
 }
 
 val genLayoutsList by tasks.registering(Exec::class) {
@@ -116,7 +117,7 @@ val genLayoutsList by tasks.registering(Exec::class) {
   outputs.file(projectDir.resolve("res/values/layouts.xml"))
   doFirst { println("\nGenerating res/values/layouts.xml") }
   workingDir = projectDir
-  commandLine("python", "gen_layouts.py")
+  commandLine("python3", "gen_layouts.py")
 }
 
 val genMethodXml by tasks.registering(Exec::class) {
@@ -127,7 +128,7 @@ val genMethodXml by tasks.registering(Exec::class) {
   doFirst { println("\nGenerating res/xml/method.xml") }
   doFirst { standardOutput = FileOutputStream(out) }
   workingDir = projectDir
-  commandLine("python", "gen_method_xml.py")
+  commandLine("python3", "gen_method_xml.py")
 }
 
 val checkKeyboardLayouts by tasks.registering(Exec::class) {
@@ -136,7 +137,7 @@ val checkKeyboardLayouts by tasks.registering(Exec::class) {
   outputs.file(projectDir.resolve("check_layout.output"))
   doFirst { println("\nChecking layouts") }
   workingDir = projectDir
-  commandLine("python", "check_layout.py")
+  commandLine("python3", "check_layout.py")
 }
 
 val compileComposeSequences by tasks.registering(Exec::class) {
@@ -149,7 +150,7 @@ val compileComposeSequences by tasks.registering(Exec::class) {
     !it.name.endsWith(".py") && !it.name.endsWith(".md")
   }!!.map { it.absolutePath }.toTypedArray()
   workingDir = projectDir
-  commandLine("python", `in`.resolve("compile.py").absolutePath, *sequences)
+  commandLine("python3", `in`.resolve("compile.py").absolutePath, *sequences)
   doFirst { standardOutput = FileOutputStream(out) }
 }
 
