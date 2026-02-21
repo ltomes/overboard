@@ -7,8 +7,26 @@
     <attr name="colorKey" format="color"/>
     <!-- Background of the keys when pressed -->
     <attr name="colorKeyActivated" format="color"/>
+    <!-- Background of modifier / non-alpha keys (0 = use colorKey) -->
+    <attr name="colorKeyModifier" format="color"/>
+    <!-- Background of modifier / non-alpha keys when pressed (0 = use colorKeyActivated) -->
+    <attr name="colorKeyModifierActivated" format="color"/>
+    <!-- Background of accent keys like Enter/Esc (0 = use colorKey) -->
+    <attr name="colorKeyAccent" format="color"/>
+    <!-- Background of accent keys when pressed (0 = use colorKeyActivated) -->
+    <attr name="colorKeyAccentActivated" format="color"/>
+    <!-- Dimple dot color for injection-molded texture (0 = disabled) -->
+    <attr name="colorKeyDimple" format="color"/>
     <!-- Label colors -->
     <attr name="colorLabel" format="color"/>
+    <!-- Label color on modifier keys (0 = use colorLabel) -->
+    <attr name="colorLabelModifier" format="color"/>
+    <!-- Sub-label color on modifier keys (0 = use colorSubLabel) -->
+    <attr name="colorSubLabelModifier" format="color"/>
+    <!-- Label color on accent keys (0 = use colorLabel) -->
+    <attr name="colorLabelAccent" format="color"/>
+    <!-- Sub-label color on accent keys (0 = use colorSubLabel) -->
+    <attr name="colorSubLabelAccent" format="color"/>
     <attr name="colorLabelActivated" format="color"/>
     <attr name="colorLabelLocked" format="color"/>
     <attr name="secondaryDimming" format="float"/>
@@ -294,5 +312,175 @@
     <item name="emoji_color">?colorLabel</item>
     <item name="clipboard_divider_color">?colorLabel</item>
     <item name="clipboard_divider_height">2dp</item>
+ </style>
+ <!-- MT3 /dev/tty by Matt3o — warm beige PBT alphas (#D0CCBB), warm gray modifiers (#8C8880),
+      dark charcoal dye-sub legends (#3D3C39); classic red accent keys (#C03030) for
+      activated state matching ESC/Return accent kit. This is a light theme. -->
+ <style name="MitoTTY" parent="BaseTheme">
+    <item name="android:isLightTheme">true</item>
+    <!-- Warm gray background matching modifier key tone (~#8C8880) -->
+    <item name="colorKeyboard">#b0aca4</item>
+    <!-- Warm beige alpha key color (~#D0CCBB) — the dominant alpha color -->
+    <item name="colorKey">#d0ccbb</item>
+    <!-- TTY red accent (~#C03030) for activated keys, matching the classic red
+         ESC/Return accent kit from /dev/tty -->
+    <item name="colorKeyActivated">#c03030</item>
+    <!-- Warm gray modifier keys — distinctly darker than beige alphas -->
+    <item name="colorKeyModifier">#8a8678</item>
+    <item name="colorKeyModifierActivated">#c03030</item>
+    <!-- Red accent keys (Enter, Esc) matching the /dev/tty accent kit -->
+    <item name="colorKeyAccent">#c03030</item>
+    <item name="colorKeyAccentActivated">#901818</item>
+    <!-- Cream legends on gray mod bodies for readability -->
+    <item name="colorLabelModifier">#e0dcd0</item>
+    <item name="colorSubLabelModifier">#c0bcab</item>
+    <!-- White legends on red accent keys -->
+    <item name="colorLabelAccent">#ffffff</item>
+    <item name="colorSubLabelAccent">#f0d0d0</item>
+    <!-- Dark charcoal legends (~#3D3C39), matching dye-sublimated PBT legends -->
+    <item name="colorLabel">#3d3c39</item>
+    <!-- White legends on red activated keys for high contrast -->
+    <item name="colorLabelActivated">#ffffff</item>
+    <!-- Olive Triumph accent for locked state (caps lock) -->
+    <item name="colorLabelLocked">#4e5038</item>
+    <!-- Medium warm gray sub-labels, matching modifier key tone -->
+    <item name="colorSubLabel">#5a5850</item>
+    <!-- Thicker border to evoke MT3's high-wall sculpted profile depth -->
+    <item name="keyBorderWidth">1.5dp</item>
+    <item name="keyBorderWidthActivated">0dp</item>
+    <item name="keyBorderColorLeft">#c0bcab</item>
+    <item name="keyBorderColorTop">#dcd8c8</item>
+    <item name="keyBorderColorRight">#a8a498</item>
+    <item name="keyBorderColorBottom">#8c8880</item>
+    <item name="keyBorderRadius">3dp</item>
+    <item name="emoji_button_bg">#d0ccbb</item>
+    <item name="emoji_color">#3d3c39</item>
+ </style>
+ <!-- GMK Pulse — near-true-black alphas (GMK CR ~#171718), turquoise mods (GMK TU2 ~#00A4A9),
+      Mitolet violet kit (~#5D437E). Colors color-matched to original SA Pulse at GMK HQ. -->
+ <style name="MitoPulse" parent="BaseTheme">
+    <item name="android:isLightTheme">false</item>
+    <!-- Near-black background, slightly lighter than key faces -->
+    <item name="colorKeyboard">#0e0e0f</item>
+    <!-- Near-true-black alpha key color (GMK CR ~#171718) -->
+    <item name="colorKey">#171718</item>
+    <!-- Mitolet violet for activated keys (~#5D437E brightened for visibility) -->
+    <item name="colorKeyActivated">#7040a0</item>
+    <!-- Rich dark teal modifier keys matching SA/GMK Pulse mod bodies (TU2) -->
+    <item name="colorKeyModifier">#006068</item>
+    <item name="colorKeyModifierActivated">#7040a0</item>
+    <!-- Dark legends on teal mod bodies (turquoise-on-teal would be invisible) -->
+    <item name="colorLabelModifier">#0a1a1c</item>
+    <item name="colorSubLabelModifier">#0a3035</item>
+    <!-- GMK TU2 turquoise legends (~#00A4A9) — the bright mod color -->
+    <item name="colorLabel">#00a4a9</item>
+    <item name="colorLabelActivated">#ffffff</item>
+    <!-- Mitolet violet for locked state (~#5D437E) -->
+    <item name="colorLabelLocked">#5d437e</item>
+    <!-- Darker teal for sub-labels -->
+    <item name="colorSubLabel">#007478</item>
+    <item name="keyBorderWidth">0.8dp</item>
+    <item name="keyBorderWidthActivated">0dp</item>
+    <item name="keyBorderColorLeft">#202022</item>
+    <item name="keyBorderColorTop">#242425</item>
+    <item name="keyBorderColorRight">#111112</item>
+    <item name="keyBorderColorBottom">#080809</item>
+    <item name="keyBorderRadius">3dp</item>
+    <item name="emoji_button_bg">#171718</item>
+    <item name="emoji_color">#00a4a9</item>
+ </style>
+ <!-- MT3 Cyber (MiTo) — raw purple key bodies, searing pink/yellow/green legends,
+      cyberpunk 2077 inspired. Confirmed design: "raw purple keys with searing pink,
+      yellow, and green legends." -->
+ <style name="MitoMT3" parent="BaseTheme">
+    <item name="android:isLightTheme">false</item>
+    <!-- Deep purple-black background -->
+    <item name="colorKeyboard">#150020</item>
+    <!-- Dark purple key faces -->
+    <item name="colorKey">#280040</item>
+    <!-- Searing hot pink when activated -->
+    <item name="colorKeyActivated">#e0005a</item>
+    <!-- Brighter purple modifier keys — clearly distinct from dark alpha -->
+    <item name="colorKeyModifier">#480080</item>
+    <item name="colorKeyModifierActivated">#e0005a</item>
+    <!-- Neon pink legends, matching the searing pink legend color -->
+    <item name="colorLabel">#ff40a0</item>
+    <!-- Cyber yellow when activated, referencing the yellow accent kit -->
+    <item name="colorLabelActivated">#ffee00</item>
+    <!-- Neon green for locked, from the cyberpunk color palette -->
+    <item name="colorLabelLocked">#00ff88</item>
+    <!-- Muted purple sub-labels -->
+    <item name="colorSubLabel">#b060cc</item>
+    <item name="keyBorderWidth">1dp</item>
+    <item name="keyBorderWidthActivated">0dp</item>
+    <item name="keyBorderColorLeft">#3c0060</item>
+    <item name="keyBorderColorTop">#4a0070</item>
+    <item name="keyBorderColorRight">#28004c</item>
+    <item name="keyBorderColorBottom">#100018</item>
+    <item name="keyBorderRadius">4dp</item>
+    <item name="emoji_button_bg">#280040</item>
+    <item name="emoji_color">#ff40a0</item>
+ </style>
+ <!-- PBTfans X-Ray — clear ABS with white legends; directional borders simulate homing bumps -->
+ <style name="PBTfansXRay" parent="BaseTheme">
+    <item name="android:isLightTheme">true</item>
+    <!-- Cool blue-grey background, like x-ray film -->
+    <item name="colorKeyboard">#b8c8d8</item>
+    <!-- Lighter blue-grey key faces, simulating the translucent ABS -->
+    <item name="colorKey">#d8e4ef</item>
+    <item name="colorKeyActivated">#8aa0b8</item>
+    <!-- Dimple dots simulating dual-injection molding texture -->
+    <item name="colorKeyDimple">#c8d8e8</item>
+    <!-- Near-black legends like the white WS1 legends on the clear base appear as dark silhouettes -->
+    <item name="colorLabel">#1a2030</item>
+    <item name="colorLabelActivated">#003090</item>
+    <item name="colorLabelLocked">#0040b0</item>
+    <item name="colorSubLabel">#38485a</item>
+    <!-- Thick directional borders simulate the tactile raised bumps of physical keycaps;
+         bright top/left edges and dark bottom/right edges create the 3-D homing-dot illusion -->
+    <item name="keyBorderWidth">2.5dp</item>
+    <item name="keyBorderWidthActivated">1dp</item>
+    <item name="keyBorderColorLeft">#d4e4f4</item>
+    <item name="keyBorderColorTop">#e8f4ff</item>
+    <item name="keyBorderColorRight">#8090a4</item>
+    <item name="keyBorderColorBottom">#4a6070</item>
+    <item name="keyBorderRadius">5dp</item>
+    <item name="emoji_button_bg">#d8e4ef</item>
+    <item name="emoji_color">#1a2030</item>
+ </style>
+ <!-- Tai-Hao Miami PBT — official SKU C22BU201. Teal alphas (~#00B4C8) with pink
+      legends; pink modifiers (~#FF6F91) with teal legends. Doubleshot PBT. -->
+ <style name="TaiHaoMiami" parent="BaseTheme">
+    <item name="android:isLightTheme">true</item>
+    <!-- Light off-white background approximating the PBT base surface -->
+    <item name="colorKeyboard">#e8e8e8</item>
+    <!-- Teal alpha key bodies -->
+    <item name="colorKey">#00b4c8</item>
+    <!-- Teal darkens when pressed -->
+    <item name="colorKeyActivated">#008898</item>
+    <!-- Pink modifier key bodies (Shift, Ctrl, Backspace, etc.) -->
+    <item name="colorKeyModifier">#ff6f91</item>
+    <item name="colorKeyModifierActivated">#cc4870</item>
+    <!-- Pink legends on teal alpha keys -->
+    <item name="colorLabel">#ff6f91</item>
+    <!-- White legends when pressed for visibility -->
+    <item name="colorLabelActivated">#ffffff</item>
+    <!-- Hot pink for locked state -->
+    <item name="colorLabelLocked">#ff6f91</item>
+    <!-- Teal legends on pink modifier keys (color-inverted) -->
+    <item name="colorLabelModifier">#00b4c8</item>
+    <item name="colorSubLabelModifier">#008898</item>
+    <!-- Darker teal sub-labels on alpha keys -->
+    <item name="colorSubLabel">#007e8c</item>
+    <!-- Subtle borders for OEM-profile PBT; darker bottom edge for slight depth -->
+    <item name="keyBorderWidth">0.8dp</item>
+    <item name="keyBorderWidthActivated">0dp</item>
+    <item name="keyBorderColorLeft">#009aac</item>
+    <item name="keyBorderColorTop">#00c8dc</item>
+    <item name="keyBorderColorRight">#008898</item>
+    <item name="keyBorderColorBottom">#006c7a</item>
+    <item name="keyBorderRadius">4dp</item>
+    <item name="emoji_button_bg">#00b4c8</item>
+    <item name="emoji_color">#ff6f91</item>
  </style>
 </resources>

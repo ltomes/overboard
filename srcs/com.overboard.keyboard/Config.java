@@ -191,7 +191,7 @@ public final class Config
     characterSize =
       _prefs.getFloat("character_size", 1.15f)
       * characterSizeScale;
-    theme = getThemeId(res, _prefs.getString("theme", ""));
+    theme = getThemeId(res, _prefs.getString("theme", "pbtfansxray"));
     autocapitalisation = _prefs.getBoolean("autocapitalisation", true);
     change_method_key_replacement = get_change_method_key_replacement(_prefs);
     extra_keys_param = ExtraKeysPreference.get_extra_keys(_prefs);
@@ -290,6 +290,11 @@ public final class Config
       case "cobalt": return R.style.Cobalt;
       case "pine": return R.style.Pine;
       case "epaperblack": return R.style.ePaperBlack;
+      case "mitotty": return R.style.MitoTTY;
+      case "mitopulse": return R.style.MitoPulse;
+      case "mitomt3": return R.style.MitoMT3;
+      case "pbtfansxray": return R.style.PBTfansXRay;
+      case "taihaoMiami": return R.style.TaiHaoMiami;
       default:
       case "system":
         if ((night_mode & Configuration.UI_MODE_NIGHT_NO) != 0)

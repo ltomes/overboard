@@ -12,6 +12,11 @@ public class Theme
   // Key colors
   public final int colorKey;
   public final int colorKeyActivated;
+  public final int colorKeyModifier;
+  public final int colorKeyModifierActivated;
+  public final int colorKeyAccent;
+  public final int colorKeyAccentActivated;
+  public final int colorKeyDimple;
 
   // Label colors
   public final int lockedColor;
@@ -20,6 +25,10 @@ public class Theme
   public final int subLabelColor;
   public final int secondaryLabelColor;
   public final int greyedLabelColor;
+  public final int labelModifierColor;
+  public final int subLabelModifierColor;
+  public final int labelAccentColor;
+  public final int subLabelAccentColor;
 
   // Key borders
   public final float keyBorderRadius;
@@ -36,10 +45,20 @@ public class Theme
 
   public Theme(Context context, AttributeSet attrs)
   {
+    this(context, attrs, 0);
+  }
+
+  public Theme(Context context, AttributeSet attrs, int defStyleRes)
+  {
     getKeyFont(context); // _key_font will be accessed
-    TypedArray s = context.getTheme().obtainStyledAttributes(attrs, R.styleable.keyboard, 0, 0);
+    TypedArray s = context.getTheme().obtainStyledAttributes(attrs, R.styleable.keyboard, 0, defStyleRes);
     colorKey = s.getColor(R.styleable.keyboard_colorKey, 0);
     colorKeyActivated = s.getColor(R.styleable.keyboard_colorKeyActivated, 0);
+    colorKeyModifier = s.getColor(R.styleable.keyboard_colorKeyModifier, 0);
+    colorKeyModifierActivated = s.getColor(R.styleable.keyboard_colorKeyModifierActivated, 0);
+    colorKeyAccent = s.getColor(R.styleable.keyboard_colorKeyAccent, 0);
+    colorKeyAccentActivated = s.getColor(R.styleable.keyboard_colorKeyAccentActivated, 0);
+    colorKeyDimple = s.getColor(R.styleable.keyboard_colorKeyDimple, 0);
     colorKeyboard = s.getColor(R.styleable.keyboard_colorKeyboard, 0);
     colorNavBar = s.getColor(R.styleable.keyboard_navigationBarColor, 0);
     isLightNavBar = s.getBoolean(R.styleable.keyboard_windowLightNavigationBar, false);
@@ -47,6 +66,10 @@ public class Theme
     activatedColor = s.getColor(R.styleable.keyboard_colorLabelActivated, 0);
     lockedColor = s.getColor(R.styleable.keyboard_colorLabelLocked, 0);
     subLabelColor = s.getColor(R.styleable.keyboard_colorSubLabel, 0);
+    labelModifierColor = s.getColor(R.styleable.keyboard_colorLabelModifier, 0);
+    subLabelModifierColor = s.getColor(R.styleable.keyboard_colorSubLabelModifier, 0);
+    labelAccentColor = s.getColor(R.styleable.keyboard_colorLabelAccent, 0);
+    subLabelAccentColor = s.getColor(R.styleable.keyboard_colorSubLabelAccent, 0);
     secondaryLabelColor = adjustLight(labelColor,
         s.getFloat(R.styleable.keyboard_secondaryDimming, 0.25f));
     greyedLabelColor = adjustLight(labelColor,
@@ -100,6 +123,11 @@ public class Theme
 
     public final Key key;
     public final Key key_activated;
+    public final Key key_modifier;
+    public final Key key_modifier_activated;
+    public final Key key_accent;
+    public final Key key_accent_activated;
+    public final Paint dimple_paint;
 
     public Computed(Theme theme, Config config, float keyWidth, KeyboardData layout)
     {
@@ -115,6 +143,40 @@ public class Theme
       margin_left = horizontal_margin / 2;
       key = new Key(theme, config, keyWidth, false);
       key_activated = new Key(theme, config, keyWidth, true);
+      if (theme.colorKeyModifier != 0)
+      {
+        key_modifier = new Key(theme, config, keyWidth, false, theme.colorKeyModifier);
+        key_modifier_activated = new Key(theme, config, keyWidth, true,
+            theme.colorKeyModifierActivated != 0
+                ? theme.colorKeyModifierActivated : theme.colorKeyActivated);
+      }
+      else
+      {
+        key_modifier = key;
+        key_modifier_activated = key_activated;
+      }
+      if (theme.colorKeyAccent != 0)
+      {
+        key_accent = new Key(theme, config, keyWidth, false, theme.colorKeyAccent);
+        key_accent_activated = new Key(theme, config, keyWidth, true,
+            theme.colorKeyAccentActivated != 0
+                ? theme.colorKeyAccentActivated : theme.colorKeyActivated);
+      }
+      else
+      {
+        key_accent = key;
+        key_accent_activated = key_activated;
+      }
+      if (theme.colorKeyDimple != 0)
+      {
+        dimple_paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        dimple_paint.setStyle(Paint.Style.FILL);
+        dimple_paint.setColor(theme.colorKeyDimple);
+      }
+      else
+      {
+        dimple_paint = null;
+      }
       indication_paint = init_label_paint(config, null);
       indication_paint.setColor(theme.subLabelColor);
     }
@@ -144,7 +206,13 @@ public class Theme
 
       public Key(Theme theme, Config config, float keyWidth, boolean activated)
       {
-        bg_paint.setColor(activated ? theme.colorKeyActivated : theme.colorKey);
+        this(theme, config, keyWidth, activated,
+            activated ? theme.colorKeyActivated : theme.colorKey);
+      }
+
+      public Key(Theme theme, Config config, float keyWidth, boolean activated, int bgColor)
+      {
+        bg_paint.setColor(bgColor);
         if (config.borderConfig)
         {
           border_radius = config.customBorderRadius * keyWidth;

@@ -29,6 +29,43 @@ Overboard renders as a system overlay instead of a standard input method window.
 - **Smart delayed show** — avoids covering long-press menus and selection handles
 - **Swipe typing** — slide keys toward corners for extra characters (inherited from Unexpected Keyboard)
 
+### Themes
+
+Overboard ships with keycap-inspired themes modeled after real mechanical keyboard keycap sets, plus standard light/dark options.
+
+#### PBTfans X-Ray *(default)*
+Translucent ice-blue keys with injection-molded dimple texture. Inspired by [PBTfans X-Ray](https://kbdfans.com/collections/pbtfans) by KBDfans.
+
+![X-Ray theme](assets/themes/xray.png)
+
+#### MiTo Pulse
+Dark alphas with rich teal modifier keys and turquoise legends. Inspired by [SA/GMK Pulse](https://drop.com/buy/massdrop-x-mito-sa-pulse-tkl-keycap-set) by [MiTo](https://mitormk.com/).
+
+![Pulse theme](assets/themes/mito-pulse.png)
+
+#### Matt3o /dev/tty
+Warm beige alphas with warm gray modifiers and red accent keys. Inspired by [MT3 /dev/tty](https://drop.com/buy/drop-matt3o-mt3-dev-tty-keycap-set) by Matt3o.
+
+![TTY theme](assets/themes/mito-tty.png)
+
+#### MiTo MT3 Cyber
+Deep purple keys with searing pink legends and neon accents. Inspired by [MT3 Cyber](https://drop.com/buy/drop-mito-mt3-cyber-custom-keycap-set) by [MiTo](https://mitormk.com/).
+
+![MT3 theme](assets/themes/mito-mt3.png)
+
+#### Tai-Hao Miami
+Teal alpha keys with pink legends, pink modifier keys with teal legends. Inspired by [Tai-Hao Miami](https://shop.tai-hao.com/products/pbt--backlit--c22bu201) by Tai-Hao.
+
+![Miami theme](assets/themes/tai-hao-miami.png)
+
+#### Dark / Light
+
+| Dark | Light |
+|------|-------|
+| ![Dark theme](assets/themes/dark.png) | ![Light theme](assets/themes/light.png) |
+
+> Theme screenshots are auto-generated with [Paparazzi](https://github.com/cashapp/paparazzi). Run `./gradlew recordPaparazziDebug` to regenerate.
+
 ### Privacy
 - No ads
 - No network requests
