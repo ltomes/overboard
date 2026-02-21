@@ -44,8 +44,6 @@
     <string name="pref_category_behavior">Verhalten</string>
     <string name="pref_autocapitalisation_title">Automatische Großschreibung</string>
     <string name="pref_autocapitalisation_summary">Umschalttaste am Satzanfang aktivieren</string>
-    <string name="pref_switch_input_immediate_title">Sofort zur nächsten Tastatur wechseln</string>
-    <string name="pref_switch_input_immediate_summary">Verhalten der Tastaturumschalttaste</string>
     <string name="pref_vibrate_custom">Benutzerdefinierte Vibration</string>
     <string name="pref_vibrate_duration_title">Vibrationsstärke</string>
     <!-- <string name="pref_number_entry_title">Layout when typing numbers, dates and phone numbers</string> -->

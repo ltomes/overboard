@@ -44,8 +44,6 @@
     <string name="pref_category_behavior">Comportamento</string>
     <string name="pref_autocapitalisation_title">Capitalização automática</string>
     <string name="pref_autocapitalisation_summary">Aciona o shift no início de cada frase</string>
-    <string name="pref_switch_input_immediate_title">Alternar para o último teclado usado</string>
-    <string name="pref_switch_input_immediate_summary">Comportamento da tecla de troca de teclado</string>
     <string name="pref_vibrate_custom">Vibração personalizada</string>
     <string name="pref_vibrate_duration_title">Intensidade da vibração</string>
     <!-- <string name="pref_number_entry_title">Layout when typing numbers, dates and phone numbers</string> -->

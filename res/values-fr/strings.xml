@@ -44,8 +44,6 @@
     <string name="pref_category_behavior">Comportement</string>
     <string name="pref_autocapitalisation_title">Majuscule automatique</string>
     <string name="pref_autocapitalisation_summary">Activer Shift au début des phrases</string>
-    <string name="pref_switch_input_immediate_title">Changer vers le clavier utilisé en dernier</string>
-    <string name="pref_switch_input_immediate_summary">Comportement de la touche de changement de clavier</string>
     <string name="pref_vibrate_custom">Vibrations personnalisées</string>
     <string name="pref_vibrate_duration_title">Intensité des vibrations</string>
     <string name="pref_number_entry_title">Disposition pour les nombres, dates et numéros de téléphone</string>

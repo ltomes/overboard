@@ -44,8 +44,6 @@
     <string name="pref_category_behavior">Comportamiento</string>
     <string name="pref_autocapitalisation_title">Mayúsculas automáticas</string>
     <string name="pref_autocapitalisation_summary">Presionar Mayús al principio de una oración</string>
-    <string name="pref_switch_input_immediate_title">Cambiar al último teclado usado</string>
-    <string name="pref_switch_input_immediate_summary">Comportamiento de la tecla para cambiar diseño</string>
     <string name="pref_vibrate_custom">Vibración personalizada</string>
     <string name="pref_vibrate_duration_title">Intensidad de vibración</string>
     <!-- <string name="pref_number_entry_title">Layout when typing numbers, dates and phone numbers</string> -->

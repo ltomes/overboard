@@ -44,8 +44,6 @@
     <string name="pref_category_behavior">Chování</string>
     <string name="pref_autocapitalisation_title">Automatická kapitalizace</string>
     <string name="pref_autocapitalisation_summary">Stiskne Shift na začátku věty</string>
-    <string name="pref_switch_input_immediate_title">Přepnout na posledně užívanou klávesnici</string>
-    <string name="pref_switch_input_immediate_summary">Jak bude klávesa pro přepnutí klávesnice reagovat</string>
     <string name="pref_vibrate_custom">Vlastní vibrace</string>
     <string name="pref_vibrate_duration_title">Síla vibrace</string>
     <!-- <string name="pref_number_entry_title">Layout when typing numbers, dates and phone numbers</string> -->

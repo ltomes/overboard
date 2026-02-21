@@ -44,8 +44,6 @@
     <string name="pref_category_behavior">Comportament</string>
     <string name="pref_autocapitalisation_title">Scriere automată cu majuscule</string>
     <string name="pref_autocapitalisation_summary">Autoapăsare Shift la începutul fiecărei propoziții</string>
-    <string name="pref_switch_input_immediate_title">Schimbă la ultima tastatură folosită</string>
-    <string name="pref_switch_input_immediate_summary">Comportamentul tastei pentru schimbarea tastaturii</string>
     <!-- <string name="pref_vibrate_custom">Custom vibration</string> -->
     <!-- <string name="pref_vibrate_duration_title">Vibration intensity</string> -->
     <!-- <string name="pref_number_entry_title">Layout when typing numbers, dates and phone numbers</string> -->

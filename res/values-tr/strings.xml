@@ -44,8 +44,6 @@
     <string name="pref_category_behavior">Klavye davranışı</string>
     <string name="pref_autocapitalisation_title">Otomatik büyük harf</string>
     <string name="pref_autocapitalisation_summary">Noktadan sonra ve her cümlenin başında büyük harf yapar</string>
-    <string name="pref_switch_input_immediate_title">Son kullanılan klavyeye geç</string>
-    <string name="pref_switch_input_immediate_summary">Klavye değistirme tuşunun davranışını belirler</string>
     <string name="pref_vibrate_custom">Özel titreşim</string>
     <string name="pref_vibrate_duration_title">Titreşim yoğunluğu</string>
     <!-- <string name="pref_number_entry_title">Layout when typing numbers, dates and phone numbers</string> -->

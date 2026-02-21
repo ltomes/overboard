@@ -44,8 +44,6 @@
     <string name="pref_category_behavior">Uzvedība</string>
     <string name="pref_autocapitalisation_title">Automātiski lielie burti</string>
     <string name="pref_autocapitalisation_summary">Piespiest pārslēdzēju teikuma sākumā</string>
-    <string name="pref_switch_input_immediate_title">Pārslēgties uz pēdējo izmantoto tastatūru</string>
-    <string name="pref_switch_input_immediate_summary">Tastatūras pārslēgšanas taustiņa uzvedība</string>
     <string name="pref_vibrate_custom">Pielāgota trīcēšana</string>
     <string name="pref_vibrate_duration_title">Trīcēšanas stiprums</string>
     <!-- <string name="pref_number_entry_title">Layout when typing numbers, dates and phone numbers</string> -->

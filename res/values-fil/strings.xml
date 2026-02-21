@@ -44,8 +44,6 @@
     <string name="pref_category_behavior">Ugali</string>
     <string name="pref_autocapitalisation_title">Automatikong pagkakapitalisa</string>
     <string name="pref_autocapitalisation_summary">Mag-Shift sa simula ng pangungusap</string>
-    <string name="pref_switch_input_immediate_title">Lumipat sa huling ginamit na keyboard</string>
-    <string name="pref_switch_input_immediate_summary">Ugali ng key sa pagpapalit ng keyboard</string>
     <string name="pref_vibrate_custom">Custom na vibration</string>
     <string name="pref_vibrate_duration_title">Lakas ng vibration</string>
     <!-- <string name="pref_number_entry_title">Layout when typing numbers, dates and phone numbers</string> -->

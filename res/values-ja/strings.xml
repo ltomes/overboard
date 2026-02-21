@@ -44,8 +44,6 @@
     <string name="pref_category_behavior">挙動</string>
     <string name="pref_autocapitalisation_title">自動大文字化</string>
     <string name="pref_autocapitalisation_summary">文章の先頭でShiftキーを自動入力</string>
-    <string name="pref_switch_input_immediate_title">最後に使用したキーボードに切替</string>
-    <string name="pref_switch_input_immediate_summary">キーボード切替キーの挙動</string>
     <string name="pref_vibrate_custom">キーボード独自の振動設定</string>
     <string name="pref_vibrate_duration_title">振動の時間</string>
     <!-- <string name="pref_number_entry_title">Layout when typing numbers, dates and phone numbers</string> -->

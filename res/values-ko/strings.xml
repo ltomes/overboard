@@ -44,8 +44,6 @@
     <string name="pref_category_behavior">동작</string>
     <string name="pref_autocapitalisation_title">자동 대문자 전환</string>
     <string name="pref_autocapitalisation_summary">문장의 시작에서 Shift 키를 눌러 대문자로 전환합니다.</string>
-    <string name="pref_switch_input_immediate_title">마지막으로 사용한 키보드로 전환</string>
-    <string name="pref_switch_input_immediate_summary">키보드 전환 키의 동작 방식입니다.</string>
     <string name="pref_vibrate_custom">사용자 정의 진동</string>
     <string name="pref_vibrate_duration_title">진동 강도</string>
     <!-- <string name="pref_number_entry_title">Layout when typing numbers, dates and phone numbers</string> -->

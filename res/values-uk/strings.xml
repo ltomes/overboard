@@ -44,8 +44,6 @@
     <string name="pref_category_behavior">Поведінка</string>
     <string name="pref_autocapitalisation_title">Автоматичне введення великих літер</string>
     <string name="pref_autocapitalisation_summary">Натиснути Shift на початку речення</string>
-    <string name="pref_switch_input_immediate_title">Перейти до останньої використаної клавіатури</string>
-    <string name="pref_switch_input_immediate_summary">Поведінка клавіші перемикання клавіатури</string>
     <string name="pref_vibrate_custom">Спеціальна вібрація</string>
     <string name="pref_vibrate_duration_title">Інтенсивність вібрації</string>
     <string name="pref_number_entry_title">Макет під час введення чисел, дат та номерів</string>

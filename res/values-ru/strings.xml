@@ -44,8 +44,6 @@
     <string name="pref_category_behavior">Поведение</string>
     <string name="pref_autocapitalisation_title">Автоматическая смена регистра</string>
     <string name="pref_autocapitalisation_summary">Автоматическое нажатие Shift в начале каждого предложения</string>
-    <string name="pref_switch_input_immediate_title">Активировать предыдущую клавиатуру</string>
-    <string name="pref_switch_input_immediate_summary">Поведение клавиши переключения клавиатуры</string>
     <string name="pref_vibrate_custom">Настройка вибрации</string>
     <string name="pref_vibrate_duration_title">Интенсивность вибрации</string>
     <string name="pref_number_entry_title">Раскладка для ввода цифр, дат и телефонных номеров</string>

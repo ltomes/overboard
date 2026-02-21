@@ -44,8 +44,6 @@
     <string name="pref_category_behavior">Zachowanie</string>
     <string name="pref_autocapitalisation_title">Automatyczne wielkie litery</string>
     <string name="pref_autocapitalisation_summary">Naciśnij Shift na początku zdania</string>
-    <string name="pref_switch_input_immediate_title">Przełącz na ostatnio używaną klawiaturę</string>
-    <string name="pref_switch_input_immediate_summary">Działanie klawisza przełączającego klawiaturę</string>
     <string name="pref_vibrate_custom">Własna wibracja</string>
     <string name="pref_vibrate_duration_title">Intensywność wibracji</string>
     <!-- <string name="pref_number_entry_title">Layout when typing numbers, dates and phone numbers</string> -->

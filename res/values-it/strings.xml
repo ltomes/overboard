@@ -44,8 +44,6 @@
     <string name="pref_category_behavior">Comportamento</string>
     <string name="pref_autocapitalisation_title">Maiuscole Automatiche</string>
     <string name="pref_autocapitalisation_summary">Premi Shift all\'inizio di una frase</string>
-    <string name="pref_switch_input_immediate_title">Passare all\'ultima tastiera usata</string>
-    <string name="pref_switch_input_immediate_summary">Comportamento del tasto di cambio tastiera</string>
     <string name="pref_vibrate_custom">Vibrazione personalizzata</string>
     <string name="pref_vibrate_duration_title">Intensita` della vibrazione</string>
     <!-- <string name="pref_number_entry_title">Layout when typing numbers, dates and phone numbers</string> -->
