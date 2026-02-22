@@ -313,9 +313,9 @@
     <item name="clipboard_divider_color">?colorLabel</item>
     <item name="clipboard_divider_height">2dp</item>
  </style>
- <!-- MT3 /dev/tty by Matt3o — warm beige PBT alphas (#D0CCBB), warm gray modifiers (#8C8880),
-      dark charcoal dye-sub legends (#3D3C39); classic red accent keys (#C03030) for
-      activated state matching ESC/Return accent kit. This is a light theme. -->
+ <!-- /dev/tty by Matt3o (MT3 profile) — warm beige PBT alphas (#D0CCBB), warm gray modifiers
+      (#8C8880), dark charcoal dye-sub legends (#3D3C39); classic red accent keys (#C03030)
+      for activated state matching ESC/Return accent kit. -->
  <style name="MitoTTY" parent="BaseTheme">
     <item name="android:isLightTheme">true</item>
     <!-- Warm gray background matching modifier key tone (~#8C8880) -->
@@ -389,9 +389,8 @@
     <item name="emoji_button_bg">#171718</item>
     <item name="emoji_color">#00a4a9</item>
  </style>
- <!-- MT3 Cyber (MiTo) — raw purple key bodies, searing pink/yellow/green legends,
-      cyberpunk 2077 inspired. Confirmed design: "raw purple keys with searing pink,
-      yellow, and green legends." -->
+ <!-- Cyber by MiTo (MT3 profile) — raw purple key bodies, searing pink/yellow/green legends,
+      cyberpunk inspired. -->
  <style name="MitoMT3" parent="BaseTheme">
     <item name="android:isLightTheme">false</item>
     <!-- Deep purple-black background -->
@@ -421,7 +420,8 @@
     <item name="emoji_button_bg">#280040</item>
     <item name="emoji_color">#ff40a0</item>
  </style>
- <!-- PBTfans X-Ray — clear ABS with white legends; directional borders simulate homing bumps -->
+ <!-- X-Ray by Matthew Encina / Mod Musings (PBTfans) — clear ABS with white legends;
+      directional borders simulate homing bumps -->
  <style name="PBTfansXRay" parent="BaseTheme">
     <item name="android:isLightTheme">true</item>
     <!-- Cool blue-grey background, like x-ray film -->
