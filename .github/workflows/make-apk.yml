@@ -3,6 +3,10 @@ name: Make Apk CI
 on:
   workflow_dispatch:
   push:
+    tags:
+      - 'v*'
+    branches:
+      - '**'
   pull_request:
 
 jobs:
@@ -49,3 +53,25 @@ jobs:
       with:
         name: "${{env.artifact}} debug_apk"
         path: build/outputs/apk/debug/*.apk
+
+  Release:
+    needs: Build-Apk
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+    - name: Download APK artifact
+      uses: actions/download-artifact@v4
+      with:
+        pattern: "*debug_apk"
+    - name: Create GitHub Release
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        apk=$(find . -name '*.apk' | head -1)
+        gh release create "${{ github.ref_name }}" \
+          "$apk#Overboard-debug.apk" \
+          --repo "${{ github.repository }}" \
+          --title "${{ github.ref_name }}" \
+          --generate-notes
