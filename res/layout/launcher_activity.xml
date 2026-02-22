@@ -23,5 +23,6 @@
     <EditText android:id="@+id/launcher_tryhere_area" style="@style/paragraph" android:inputType="text" android:hint="@string/launcher_tryhere_hint" android:importantForAutofill="no"/>
     <TextView style="@style/paragraph" android:text="@string/launcher_sourcecode"/>
     <TextView style="@style/paragraph" android:text="@string/launcher_repo_url" android:autoLink="web" android:linksClickable="true"/>
+    <TextView android:id="@+id/launcher_version" style="@style/paragraph" android:textSize="12sp" android:gravity="center"/>
   </LinearLayout>
 </ScrollView>

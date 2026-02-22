@@ -162,8 +162,8 @@ public final class Config
     slide_step_px = slider_sensitivity * swipe_scaling;
     vibrate_custom = _prefs.getBoolean("vibrate_custom", false);
     vibrate_duration = _prefs.getInt("vibrate_duration", 20);
-    longPressTimeout = _prefs.getInt("longpress_timeout", 600);
-    longPressInterval = _prefs.getInt("longpress_interval", 65);
+    longPressTimeout = _prefs.getInt("longpress_timeout", 400);
+    longPressInterval = _prefs.getInt("longpress_interval", 25);
     keyrepeat_enabled = _prefs.getBoolean("keyrepeat_enabled", true);
     margin_bottom = get_dip_pref_oriented(dm, "margin_bottom", 7, 3);
     key_vertical_margin = get_dip_pref(dm, "key_vertical_margin", 1.5f) / 100;
@@ -187,11 +187,11 @@ public final class Config
     keyboard_rows_height_pixels = screenHeightPixels * keyboardHeightPercent / 395;
     horizontal_margin =
       get_dip_pref_oriented(dm, "horizontal_margin", 3, 28);
-    double_tap_lock_shift = _prefs.getBoolean("lock_double_tap", false);
+    double_tap_lock_shift = _prefs.getBoolean("lock_double_tap", true);
     characterSize =
       _prefs.getFloat("character_size", 1.15f)
       * characterSizeScale;
-    theme = getThemeId(res, _prefs.getString("theme", "pbtfansxray"));
+    theme = getThemeId(res, _prefs.getString("theme", "system"));
     autocapitalisation = _prefs.getBoolean("autocapitalisation", true);
     change_method_key_replacement = get_change_method_key_replacement(_prefs);
     extra_keys_param = ExtraKeysPreference.get_extra_keys(_prefs);
@@ -266,7 +266,7 @@ public final class Config
     return get_dip_pref(dm, pref_base_name + suffix, def);
   }
 
-  private int getThemeId(Resources res, String theme_name)
+  public static int getThemeId(Resources res, String theme_name)
   {
     int night_mode = res.getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
     switch (theme_name)

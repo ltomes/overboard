@@ -83,11 +83,11 @@
     <string name="pref_theme_e_cobalt">Cobalt</string>
     <string name="pref_theme_e_pine">Pine</string>
     <string name="pref_theme_e_epaperblack">ePaper Black</string>
-    <string name="pref_theme_e_mitotty">MT3 /dev/tty</string>
-    <string name="pref_theme_e_mitopulse">Mito Pulse</string>
-    <string name="pref_theme_e_mitomt3">Mito MT3 Cyber</string>
-    <string name="pref_theme_e_pbtfansxray">PBTfans X-Ray</string>
-    <string name="pref_theme_e_taihaoMiami">Tai-Hao Miami</string>
+    <string name="pref_theme_e_mitotty">/dev/tty (Matt3o)</string>
+    <string name="pref_theme_e_mitopulse">Pulse (MiTo)</string>
+    <string name="pref_theme_e_mitomt3">Cyber (MiTo)</string>
+    <string name="pref_theme_e_pbtfansxray">X-Ray (Mod Musings)</string>
+    <string name="pref_theme_e_taihaoMiami">Miami (Tai-Hao)</string>
     <string name="pref_swipe_dist_e_very_short">Very short</string>
     <string name="pref_swipe_dist_e_short">Short</string>
     <string name="pref_swipe_dist_e_default">Normal</string>
