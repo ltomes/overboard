@@ -227,9 +227,17 @@ public final class KeyEventHandler
     InputConnection conn = _recv.getCurrentInputConnection();
     if (conn == null)
       return;
-    conn.sendKeyEvent(new KeyEvent(1, 1, eventAction, eventCode, 0,
-          metaState, KeyCharacterMap.VIRTUAL_KEYBOARD, 0,
-          KeyEvent.FLAG_SOFT_KEYBOARD | KeyEvent.FLAG_KEEP_TOUCH_MODE));
+    try
+    {
+      conn.sendKeyEvent(new KeyEvent(1, 1, eventAction, eventCode, 0,
+            metaState, KeyCharacterMap.VIRTUAL_KEYBOARD, 0,
+            KeyEvent.FLAG_SOFT_KEYBOARD | KeyEvent.FLAG_KEEP_TOUCH_MODE));
+    }
+    catch (Exception e)
+    {
+      Logs.exn("send_keyevent", e);
+      return;
+    }
     if (eventAction == KeyEvent.ACTION_UP)
     {
       _autocap.event_sent(eventCode, metaState);
@@ -245,7 +253,15 @@ public final class KeyEventHandler
       return;
     _autocap.typed(text);
     _typedword.typed(text);
-    conn.commitText(text, 1);
+    try
+    {
+      conn.commitText(text, 1);
+    }
+    catch (Exception e)
+    {
+      Logs.exn("send_text", e);
+      return;
+    }
     clear_space_bar_state();
   }
 
@@ -254,10 +270,17 @@ public final class KeyEventHandler
     InputConnection conn = _recv.getCurrentInputConnection();
     if (conn == null)
       return;
-    conn.beginBatchEdit();
-    conn.deleteSurroundingText(remove_length, 0);
-    conn.commitText(new_text, 1);
-    conn.endBatchEdit();
+    try
+    {
+      conn.beginBatchEdit();
+      conn.deleteSurroundingText(remove_length, 0);
+      conn.commitText(new_text, 1);
+      conn.endBatchEdit();
+    }
+    catch (Exception e)
+    {
+      Logs.exn("replace_text_before_cursor", e);
+    }
   }
 
   /** See {!InputConnection.performContextMenuAction}. */
@@ -266,7 +289,14 @@ public final class KeyEventHandler
     InputConnection conn = _recv.getCurrentInputConnection();
     if (conn == null)
       return;
-    conn.performContextMenuAction(id);
+    try
+    {
+      conn.performContextMenuAction(id);
+    }
+    catch (Exception e)
+    {
+      Logs.exn("send_context_menu_action", e);
+    }
   }
 
   @SuppressLint("InlinedApi")
@@ -330,27 +360,35 @@ public final class KeyEventHandler
     InputConnection conn = _recv.getCurrentInputConnection();
     if (conn == null)
       return;
-    ExtractedText et = get_cursor_pos(conn);
-    if (et != null && can_set_selection(conn))
+    try
     {
-      int sel_start = et.selectionStart;
-      int sel_end = et.selectionEnd;
-      // Continue expanding the selection even if shift is not pressed
-      if (sel_end != sel_start)
+      ExtractedText et = get_cursor_pos(conn);
+      if (et != null && can_set_selection(conn))
       {
-        sel_end += d;
-        if (sel_end == sel_start) // Avoid making the selection empty
+        int sel_start = et.selectionStart;
+        int sel_end = et.selectionEnd;
+        // Continue expanding the selection even if shift is not pressed
+        if (sel_end != sel_start)
+        {
           sel_end += d;
+          if (sel_end == sel_start) // Avoid making the selection empty
+            sel_end += d;
+        }
+        else
+        {
+          sel_end += d;
+          // Leave 'sel_start' where it is if shift is pressed
+          if ((_meta_state & KeyEvent.META_SHIFT_ON) == 0)
+            sel_start = sel_end;
+        }
+        if (conn.setSelection(sel_start, sel_end))
+          return; // Fallback to sending key events if [setSelection] failed
       }
-      else
-      {
-        sel_end += d;
-        // Leave 'sel_start' where it is if shift is pressed
-        if ((_meta_state & KeyEvent.META_SHIFT_ON) == 0)
-          sel_start = sel_end;
-      }
-      if (conn.setSelection(sel_start, sel_end))
-        return; // Fallback to sending key events if [setSelection] failed
+    }
+    catch (Exception e)
+    {
+      Logs.exn("move_cursor", e);
+      return;
     }
     move_cursor_fallback(d);
   }
@@ -362,30 +400,38 @@ public final class KeyEventHandler
     InputConnection conn = _recv.getCurrentInputConnection();
     if (conn == null)
       return;
-    ExtractedText et = get_cursor_pos(conn);
-    if (et != null && can_set_selection(conn))
+    try
     {
-      int sel_start = et.selectionStart;
-      int sel_end = et.selectionEnd;
-      // Reorder the selection when the slider has just been pressed. The
-      // selection might have been reversed if one end crossed the other end
-      // with a previous slider.
-      if (key_down && sel_start > sel_end)
+      ExtractedText et = get_cursor_pos(conn);
+      if (et != null && can_set_selection(conn))
       {
-        sel_start = et.selectionEnd;
-        sel_end = et.selectionStart;
+        int sel_start = et.selectionStart;
+        int sel_end = et.selectionEnd;
+        // Reorder the selection when the slider has just been pressed. The
+        // selection might have been reversed if one end crossed the other end
+        // with a previous slider.
+        if (key_down && sel_start > sel_end)
+        {
+          sel_start = et.selectionEnd;
+          sel_end = et.selectionStart;
+        }
+        do
+        {
+          if (sel_left)
+            sel_start += d;
+          else
+            sel_end += d;
+          // Move the cursor twice if moving it once would make the selection
+          // empty and stop selection mode.
+        } while (sel_start == sel_end);
+        if (conn.setSelection(sel_start, sel_end))
+          return; // Fallback to sending key events if [setSelection] failed
       }
-      do
-      {
-        if (sel_left)
-          sel_start += d;
-        else
-          sel_end += d;
-        // Move the cursor twice if moving it once would make the selection
-        // empty and stop selection mode.
-      } while (sel_start == sel_end);
-      if (conn.setSelection(sel_start, sel_end))
-        return; // Fallback to sending key events if [setSelection] failed
+    }
+    catch (Exception e)
+    {
+      Logs.exn("move_cursor_sel", e);
+      return;
     }
     move_cursor_fallback(d);
   }
@@ -500,12 +546,19 @@ public final class KeyEventHandler
     InputConnection conn = _recv.getCurrentInputConnection();
     if (conn == null)
       return;
-    ExtractedText et = get_cursor_pos(conn);
-    if (et == null) return;
-    final int curs = et.selectionStart;
-    // Notify the receiver as Android's [onUpdateSelection] is not triggered.
-    if (conn.setSelection(curs, curs))
-      _recv.selection_state_changed(false);
+    try
+    {
+      ExtractedText et = get_cursor_pos(conn);
+      if (et == null) return;
+      final int curs = et.selectionStart;
+      // Notify the receiver as Android's [onUpdateSelection] is not triggered.
+      if (conn.setSelection(curs, curs))
+        _recv.selection_state_changed(false);
+    }
+    catch (Exception e)
+    {
+      Logs.exn("cancel_selection", e);
+    }
   }
 
   /** The word that was replaced by a suggestion when the last action was to
@@ -545,6 +598,12 @@ public final class KeyEventHandler
   void clear_space_bar_state()
   {
     last_replaced_word = null;
+  }
+
+  /** Remove pending callbacks. Call when the service is being destroyed. */
+  public void destroy()
+  {
+    _autocap.clear();
   }
 
   public static interface IReceiver extends Suggestions.Callback

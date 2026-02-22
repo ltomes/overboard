@@ -266,6 +266,8 @@ public class Keyboard2View extends View
 
   private KeyboardData.Row getRowAtPosition(float ty)
   {
+    if (_keyboard == null || _tc == null)
+      return null;
     float y = _config.marginTop;
     if (ty < y)
       return null;
@@ -403,6 +405,10 @@ public class Keyboard2View extends View
   @Override
   protected void onDraw(Canvas canvas)
   {
+    // Guard: _tc is created in onMeasure(); in overlay mode the framework can
+    // schedule onDraw before onMeasure has run.
+    if (_tc == null || _keyboard == null)
+      return;
     int layerAlpha = (int)(255 * _fadeMultiplier);
     boolean useFadeLayer = layerAlpha < 255;
     if (useFadeLayer)

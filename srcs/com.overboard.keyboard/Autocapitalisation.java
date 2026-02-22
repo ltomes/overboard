@@ -82,6 +82,14 @@ public final class Autocapitalisation
     callback_now(true);
   }
 
+  /** Remove pending callbacks. Call when the service is being destroyed. */
+  public void clear()
+  {
+    _handler.removeCallbacks(delayed_callback);
+    _ic = null;
+    _enabled = false;
+  }
+
   /** Pause auto capitalisation until [unpause()] is called. */
   public boolean pause()
   {
@@ -113,9 +121,13 @@ public final class Autocapitalisation
     if (new_cursor == 0 && _ic != null)
     {
       // Detect whether the input box has been cleared
-      CharSequence t = _ic.getTextAfterCursor(1, 0);
-      if (t != null && t.equals(""))
-        _should_update_caps_mode = true;
+      try
+      {
+        CharSequence t = _ic.getTextAfterCursor(1, 0);
+        if (t != null && t.equals(""))
+          _should_update_caps_mode = true;
+      }
+      catch (Exception e) { /* InputConnection may be stale */ }
     }
     _cursor = new_cursor;
     _should_enable_shift = false;
@@ -128,7 +140,15 @@ public final class Autocapitalisation
     {
       if (_should_update_caps_mode && _ic != null)
       {
-        _should_enable_shift = _enabled && (_ic.getCursorCapsMode(_caps_mode) != 0);
+        try
+        {
+          _should_enable_shift = _enabled && (_ic.getCursorCapsMode(_caps_mode) != 0);
+        }
+        catch (Exception e)
+        {
+          // InputConnection may have become stale since started()
+          _should_enable_shift = false;
+        }
         _should_update_caps_mode = false;
       }
       _callback.update_shift_state(_should_enable_shift, _should_disable_shift);

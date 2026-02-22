@@ -156,9 +156,13 @@ public class Keyboard2 extends InputMethodService
   @Override
   public void onDestroy() {
     super.onDestroy();
+    cancelPendingShow();
+    if (_keyeventhandler != null)
+      _keyeventhandler.destroy();
     if (_overlayManager != null)
       _overlayManager.hide();
-    _foldStateTracker.close();
+    try { _foldStateTracker.close(); }
+    catch (Exception e) { Logs.exn("onDestroy: FoldStateTracker", e); }
   }
 
   private void create_keyboard_view()
@@ -193,6 +197,8 @@ public class Keyboard2 extends InputMethodService
   private void refresh_current_dictionary()
   {
     _config.current_dictionary = null;
+    if (_device_locales.default_ == null)
+      return;
     String current = _device_locales.default_.dictionary;
     if (current == null)
       return;
@@ -294,6 +300,10 @@ public class Keyboard2 extends InputMethodService
     _keyboardView.setKeyboard(current_layout());
     _keyeventhandler.started(_config);
     cancelPendingShow();
+    // Set FLAG_SECURE on overlay when typing in password fields to prevent
+    // screen capture of sensitive input.
+    if (_overlayManager != null)
+      _overlayManager.setSecure(isPasswordInputType(info));
     if (useOverlayMode())
     {
       // Layer 3: Skip show when text is already selected (e.g. long-press
@@ -311,6 +321,9 @@ public class Keyboard2 extends InputMethodService
       {
         _pendingShow = () -> {
           _pendingShow = null;
+          // Guard: editor may have disconnected during the delay
+          if (getCurrentInputConnection() == null)
+            return;
           _overlayManager.show(_container_view, _config.handedness,
               _config.collapseButtonEnabled);
         };
@@ -336,6 +349,19 @@ public class Keyboard2 extends InputMethodService
   private boolean useOverlayMode()
   {
     return Settings.canDrawOverlays(this);
+  }
+
+  /** Whether the editor is a password field that should be screen-capture
+      protected. */
+  private static boolean isPasswordInputType(EditorInfo info)
+  {
+    if (info == null)
+      return false;
+    int variation = info.inputType & InputType.TYPE_MASK_VARIATION;
+    return variation == InputType.TYPE_TEXT_VARIATION_PASSWORD
+        || variation == InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+        || variation == InputType.TYPE_TEXT_VARIATION_WEB_PASSWORD
+        || variation == InputType.TYPE_NUMBER_VARIATION_PASSWORD;
   }
 
   @Override
@@ -582,7 +608,10 @@ public class Keyboard2 extends InputMethodService
         case ACTION:
           InputConnection conn = getCurrentInputConnection();
           if (conn != null)
-            conn.performEditorAction(_config.editor_config.actionId);
+          {
+            try { conn.performEditorAction(_config.editor_config.actionId); }
+            catch (Exception e) { Logs.exn("ACTION", e); }
+          }
           break;
 
         case SWITCH_FORWARD:

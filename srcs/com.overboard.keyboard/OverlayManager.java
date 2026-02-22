@@ -41,6 +41,8 @@ public class OverlayManager
   private Config.Handedness _handedness;
   /** Vertical offset from the bottom of the screen (negative = moved up). */
   private int _yOffset = 0;
+  /** Whether FLAG_SECURE is set on the overlay (for password fields). */
+  private boolean _secure = false;
 
   public interface CollapseListener
   {
@@ -137,6 +139,7 @@ public class OverlayManager
       Logs.exn("OverlayManager.show", e);
       _overlayContainer = null;
       _contentLayout = null;
+      _isShowing = false;
     }
   }
 
@@ -145,19 +148,34 @@ public class OverlayManager
   {
     if (!_isShowing || _overlayContainer == null)
       return;
-    detachFromParent(view);
-    if (_contentLayout != null)
+    if (_overlayContainer.getWindowToken() == null)
     {
-      _contentLayout.removeViewAt(_keyboardViewIndex);
-      LinearLayout.LayoutParams viewParams = new LinearLayout.LayoutParams(
-          0, ViewGroup.LayoutParams.WRAP_CONTENT, 1.0f);
-      view.setLayoutParams(viewParams);
-      _contentLayout.addView(view, _keyboardViewIndex);
+      // Window was detached — reset state instead of modifying a dead container
+      _overlayContainer = null;
+      _contentLayout = null;
+      _isShowing = false;
+      return;
     }
-    else
+    try
     {
-      _overlayContainer.removeAllViews();
-      _overlayContainer.addView(view);
+      detachFromParent(view);
+      if (_contentLayout != null)
+      {
+        _contentLayout.removeViewAt(_keyboardViewIndex);
+        LinearLayout.LayoutParams viewParams = new LinearLayout.LayoutParams(
+            0, ViewGroup.LayoutParams.WRAP_CONTENT, 1.0f);
+        view.setLayoutParams(viewParams);
+        _contentLayout.addView(view, _keyboardViewIndex);
+      }
+      else
+      {
+        _overlayContainer.removeAllViews();
+        _overlayContainer.addView(view);
+      }
+    }
+    catch (Exception e)
+    {
+      Logs.exn("OverlayManager.replaceView", e);
     }
   }
 
@@ -173,9 +191,10 @@ public class OverlayManager
       _overlayContainer.removeAllViews();
       _windowManager.removeView(_overlayContainer);
     }
-    catch (IllegalArgumentException e)
+    catch (Exception e)
     {
-      // View was not attached
+      // View was not attached or window manager state is inconsistent
+      Logs.exn("OverlayManager.hide", e);
     }
     _overlayContainer = null;
     _contentLayout = null;
@@ -198,8 +217,9 @@ public class OverlayManager
     {
       _windowManager.updateViewLayout(_overlayContainer, createLayoutParams());
     }
-    catch (IllegalArgumentException e)
+    catch (Exception e)
     {
+      Logs.exn("OverlayManager.updateLayout", e);
       _overlayContainer = null;
       _contentLayout = null;
       _isShowing = false;
@@ -209,6 +229,17 @@ public class OverlayManager
   public boolean isShowing()
   {
     return _isShowing;
+  }
+
+  /** Set FLAG_SECURE on the overlay window to prevent screenshots of
+      password entry. Call before or after show(); updates live if showing. */
+  public void setSecure(boolean secure)
+  {
+    if (_secure == secure)
+      return;
+    _secure = secure;
+    if (_isShowing)
+      updateLayout();
   }
 
   private View createCollapseButton()
@@ -276,13 +307,16 @@ public class OverlayManager
 
   private WindowManager.LayoutParams createLayoutParams()
   {
+    int flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+        | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
+        | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
+    if (_secure)
+      flags |= WindowManager.LayoutParams.FLAG_SECURE;
     WindowManager.LayoutParams params = new WindowManager.LayoutParams(
         WindowManager.LayoutParams.MATCH_PARENT,
         WindowManager.LayoutParams.WRAP_CONTENT,
         WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-        WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-            | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
-            | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
+        flags,
         PixelFormat.TRANSLUCENT
     );
     params.gravity = Gravity.BOTTOM;

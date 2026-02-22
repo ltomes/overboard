@@ -39,8 +39,8 @@ public class Emoji
       BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
       String line;
 
-      // Read emoji (until empty line)
-      while (!(line = reader.readLine()).isEmpty())
+      // Read emoji (until empty line or EOF)
+      while ((line = reader.readLine()) != null && !line.isEmpty())
       {
         Emoji e = new Emoji(line);
         _all.add(e);
@@ -71,6 +71,8 @@ public class Emoji
 
   public static List<Emoji> getEmojisByGroup(int groupIndex)
   {
+    if (groupIndex < 0 || groupIndex >= _groups.size())
+      return java.util.Collections.emptyList();
     return _groups.get(groupIndex);
   }
 
