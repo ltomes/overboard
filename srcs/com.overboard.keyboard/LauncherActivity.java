@@ -39,6 +39,7 @@ public class LauncherActivity extends Activity implements Handler.Callback
   @Override
   public void onCreate(Bundle savedInstanceState)
   {
+    AppThemeHelper.applyToActivity(this);
     super.onCreate(savedInstanceState);
     setContentView(R.layout.launcher_activity);
     _tryhere_text = (TextView)findViewById(R.id.launcher_tryhere_text);
@@ -48,6 +49,14 @@ public class LauncherActivity extends Activity implements Handler.Callback
           this.new Tryhere_OnUnhandledKeyEventListener());
     _handler = new Handler(getMainLooper(), this);
     updateOverlayPermissionUI();
+    try
+    {
+      String versionName = getPackageManager()
+          .getPackageInfo(getPackageName(), 0).versionName;
+      ((TextView)findViewById(R.id.launcher_version))
+          .setText("v" + versionName);
+    }
+    catch (Exception e) { /* ignore */ }
   }
 
   @Override
