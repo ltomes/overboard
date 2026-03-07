@@ -230,9 +230,14 @@ public final class KeyEventHandler
       return;
     try
     {
-      conn.sendKeyEvent(new KeyEvent(1, 1, eventAction, eventCode, 0,
+      boolean ok = conn.sendKeyEvent(new KeyEvent(1, 1, eventAction, eventCode, 0,
             metaState, KeyCharacterMap.VIRTUAL_KEYBOARD, 0,
             KeyEvent.FLAG_SOFT_KEYBOARD | KeyEvent.FLAG_KEEP_TOUCH_MODE));
+      if (!ok)
+      {
+        Logs.debug("send_keyevent: InputConnection rejected keycode=" + eventCode);
+        return;
+      }
     }
     catch (Exception e)
     {
@@ -256,7 +261,11 @@ public final class KeyEventHandler
     _typedword.typed(text);
     try
     {
-      conn.commitText(text, 1);
+      if (!conn.commitText(text, 1))
+      {
+        Logs.debug("send_text: InputConnection rejected text");
+        return;
+      }
     }
     catch (Exception e)
     {

@@ -319,12 +319,15 @@ public final class KeyValue implements Comparable<KeyValue>
   {
     StringBuilder b = new StringBuilder()
       .append(getKind().name()).append(":");
-    // Editing keys use private-use Unicode chars that are invisible in
-    // logs.  Append the enum name instead for readable debug output.
-    if (getKind() == Kind.Editing)
-      b.append(getEditing().name());
-    else
-      b.append(getString());
+    // Event, Keyevent, and Editing keys use private-use Unicode chars
+    // that are invisible in logs.  Append meaningful names instead.
+    switch (getKind())
+    {
+      case Editing: b.append(getEditing().name()); break;
+      case Event: b.append(getEvent().name()); break;
+      case Keyevent: b.append(getKeyevent()); break;
+      default: b.append(getString()); break;
+    }
     if (_payload instanceof Describe)
       b.append(":").append(((Describe)_payload).describe());
     return b.toString();

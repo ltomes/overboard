@@ -331,8 +331,9 @@ public class Keyboard2 extends InputMethodService
         return;
 
       // Layer 1: When restarting and the overlay is not already showing,
-      // delay the show by 400ms so that long-press menus and text selection
-      // handles have time to appear without the keyboard covering them.
+      // delay the show by 50ms so that rapid onStartInputView pairs
+      // (e.g. Firefox's dummy TYPE_NULL + real inputType) settle before
+      // we create the overlay window.
       if (restarting && !_overlayManager.isShowing())
       {
         _pendingShow = () -> {
@@ -343,7 +344,7 @@ public class Keyboard2 extends InputMethodService
           _overlayManager.show(_container_view, _config.handedness,
               _config.collapseButtonEnabled);
         };
-        _handler.postDelayed(_pendingShow, 400);
+        _handler.postDelayed(_pendingShow, 50);
       }
       else
       {
