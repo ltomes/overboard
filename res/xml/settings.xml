@@ -75,7 +75,7 @@
   <PreferenceCategory android:title="@string/pref_category_clipboard">
     <ListPreference android:key="clipboard_history_duration" android:title="@string/pref_clipboard_history_duration" android:summary="%s" android:defaultValue="5" android:entries="@array/pref_clipboard_duration_entries" android:entryValues="@array/pref_clipboard_duration_values"/>
   </PreferenceCategory>
-  <PreferenceCategory android:title="@string/pref_category_debug">
+  <PreferenceCategory android:key="category_debug" android:title="@string/pref_category_debug">
     <CheckBoxPreference android:key="debug_logging" android:title="@string/pref_debug_logging_title" android:summary="@string/pref_debug_logging_summary" android:defaultValue="false"/>
     <Preference android:key="share_debug_log" android:title="@string/pref_share_log_title" android:summary="@string/pref_share_log_summary"/>
   </PreferenceCategory>

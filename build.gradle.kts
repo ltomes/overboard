@@ -63,6 +63,12 @@ android {
         storePassword = System.getenv("RELEASE_KEYSTORE_PASSWORD")
         keyAlias = System.getenv("RELEASE_KEY_ALIAS")
         keyPassword = System.getenv("RELEASE_KEY_PASSWORD")
+      } else {
+        // Fallback to debug keystore for CI before release keys are set up
+        storeFile = file(System.getenv("DEBUG_KEYSTORE") ?: "debug.keystore")
+        storePassword = System.getenv("DEBUG_KEYSTORE_PASSWORD") ?: "debug0"
+        keyAlias = System.getenv("DEBUG_KEY_ALIAS") ?: "debug"
+        keyPassword = System.getenv("DEBUG_KEY_PASSWORD") ?: "debug0"
       }
     }
   }

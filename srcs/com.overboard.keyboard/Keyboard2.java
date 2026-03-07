@@ -141,7 +141,8 @@ public class Keyboard2 extends InputMethodService
     _config.handler = _keyeventhandler;
     prefs.registerOnSharedPreferenceChangeListener(this);
     Logs.set_debug_logs(getResources().getBoolean(R.bool.debug_logs));
-    if (prefs.getBoolean("debug_logging", false))
+    if (getResources().getBoolean(R.bool.debug_logs)
+        && prefs.getBoolean("debug_logging", false))
       Logs.start_file_logging(this);
     Logs.install_crash_handler();
     Logs.debug("Keyboard2.onCreate");
@@ -545,11 +546,14 @@ public class Keyboard2 extends InputMethodService
   @Override
   public void onSharedPreferenceChanged(SharedPreferences _prefs, String _key)
   {
-    boolean fileLogging = _prefs.getBoolean("debug_logging", false);
-    if (fileLogging && !Logs.is_file_logging())
-      Logs.start_file_logging(this);
-    else if (!fileLogging && Logs.is_file_logging())
-      Logs.stop_file_logging();
+    if (getResources().getBoolean(R.bool.debug_logs))
+    {
+      boolean fileLogging = _prefs.getBoolean("debug_logging", false);
+      if (fileLogging && !Logs.is_file_logging())
+        Logs.start_file_logging(this);
+      else if (!fileLogging && Logs.is_file_logging())
+        Logs.stop_file_logging();
+    }
     refresh_config();
     _keyboardView.setKeyboard(current_layout());
   }

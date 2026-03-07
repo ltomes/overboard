@@ -33,7 +33,10 @@ Overboard renders as a system overlay instead of a standard input method window.
 
 Overboard ships with keycap-inspired themes modeled after real mechanical keyboard keycap sets, plus standard light/dark options.
 
-#### PBTfans X-Ray *(default)*
+#### Showcase *(default)*
+Cycles through all keycap themes each time the keyboard appears — a different theme for every text field. Set a specific theme in Settings if you prefer.
+
+#### PBTfans X-Ray
 Translucent ice-blue keys with injection-molded dimple texture. Inspired by [PBTfans X-Ray](https://kbdfans.com/collections/pbtfans) by KBDfans.
 
 ![X-Ray theme](assets/themes/xray.png)
@@ -68,9 +71,19 @@ Teal alpha keys with pink legends, pink modifier keys with teal legends. Inspire
 
 ### Privacy
 - No ads
-- No network requests
 - No telemetry
 - Fully open source (GPL-3.0)
+- Network requests are limited to downloading optional language packs from GitHub
+
+### Development Builds
+
+Debug builds (used during development and in pull requests) include diagnostic
+logging that can be enabled from Settings > Debug. This logging writes to a
+local file on the device and is never transmitted anywhere.
+
+Release builds — including all versions published to GitHub Releases — have
+debug logging completely disabled. The debug settings category is hidden and
+the logging code paths are inactive.
 
 ---
 

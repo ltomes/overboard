@@ -36,10 +36,21 @@ public class SettingsActivity extends PreferenceActivity
     findPreference("keyboard_height_unfolded").setEnabled(foldableDevice);
     findPreference("keyboard_height_landscape_unfolded").setEnabled(foldableDevice);
 
-    findPreference("share_debug_log").setOnPreferenceClickListener(pref -> {
-      share_debug_log();
-      return true;
-    });
+    // Debug settings are only available in debug builds (R.bool.debug_logs
+    // is set to true by build.gradle.kts for the debug build type only).
+    if (getResources().getBoolean(R.bool.debug_logs))
+    {
+      findPreference("share_debug_log").setOnPreferenceClickListener(pref -> {
+        share_debug_log();
+        return true;
+      });
+    }
+    else
+    {
+      Preference debugCategory = findPreference("category_debug");
+      if (debugCategory != null)
+        getPreferenceScreen().removePreference(debugCategory);
+    }
   }
 
   private void share_debug_log()
