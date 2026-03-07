@@ -163,7 +163,16 @@ public class OverlayManager
       detachFromParent(view);
       if (_contentLayout != null)
       {
-        _contentLayout.removeViewAt(_keyboardViewIndex);
+        // Guard: Firefox (and WebView-based browsers) can send two rapid
+        // onStartInputView calls — the first with inputType=0 partially sets
+        // up the view hierarchy, and a restarting=true call follows ~50ms
+        // later.  If the child at _keyboardViewIndex was never fully attached,
+        // removeViewAt triggers an NPE inside ViewGroup.unFocus.
+        if (_keyboardViewIndex < _contentLayout.getChildCount()
+            && _contentLayout.getChildAt(_keyboardViewIndex) != null)
+        {
+          _contentLayout.removeViewAt(_keyboardViewIndex);
+        }
         LinearLayout.LayoutParams viewParams = new LinearLayout.LayoutParams(
             0, ViewGroup.LayoutParams.WRAP_CONTENT, 1.0f);
         view.setLayoutParams(viewParams);
