@@ -209,12 +209,15 @@ public class OverlayManager
     }
   }
 
-  /** Hide and remove the overlay window. */
+  /** Hide and remove the overlay window. No-op if not currently shown. */
   public void hide()
   {
-    Logs.debug("OverlayManager.hide");
     if (!_isShowing || _overlayContainer == null)
+    {
+      Logs.debug("OverlayManager.hide (already hidden)");
       return;
+    }
+    Logs.debug("OverlayManager.hide");
     try
     {
       if (_contentLayout != null)

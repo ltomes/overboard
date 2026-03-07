@@ -34,6 +34,10 @@ import juloo.cdict.Cdict;
 public class Keyboard2 extends InputMethodService
   implements SharedPreferences.OnSharedPreferenceChangeListener
 {
+  /** Singleton guard: tracks the most recent instance so that a ghost instance
+      left alive after a configuration-change race can be cleaned up. */
+  private static Keyboard2 sInstance;
+
   /** The view containing the keyboard and candidates view. */
   private ViewGroup _container_view;
   private Keyboard2View _keyboardView;
@@ -130,6 +134,15 @@ public class Keyboard2 extends InputMethodService
   public void onCreate()
   {
     super.onCreate();
+    // Kill any ghost instance's overlay left alive by a configuration-change
+    // race (Bug 1: old instance never gets onDestroy on some Samsung/Android 16
+    // devices, leaving a dangling overlay window that duplicates key events).
+    if (sInstance != null && sInstance != this)
+    {
+      Logs.debug("Keyboard2.onCreate: destroying ghost instance overlay");
+      sInstance.destroyOverlay();
+    }
+    sInstance = this;
     SharedPreferences prefs = DirectBootAwarePreferences.get_shared_preferences(this);
     _handler = new Handler(getMainLooper());
     _foldStateTracker = new FoldStateTracker(this);
@@ -162,13 +175,21 @@ public class Keyboard2 extends InputMethodService
   public void onDestroy() {
     super.onDestroy();
     Logs.debug("Keyboard2.onDestroy");
+    if (sInstance == this)
+      sInstance = null;
+    destroyOverlay();
+    try { _foldStateTracker.close(); }
+    catch (Exception e) { Logs.exn("onDestroy: FoldStateTracker", e); }
+  }
+
+  /** Tear down overlay and pending callbacks. Safe to call multiple times. */
+  private void destroyOverlay()
+  {
     cancelPendingShow();
     if (_keyeventhandler != null)
       _keyeventhandler.destroy();
     if (_overlayManager != null)
       _overlayManager.hide();
-    try { _foldStateTracker.close(); }
-    catch (Exception e) { Logs.exn("onDestroy: FoldStateTracker", e); }
   }
 
   private void create_keyboard_view()
