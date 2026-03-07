@@ -318,7 +318,13 @@ public final class KeyValue implements Comparable<KeyValue>
   public String toString()
   {
     StringBuilder b = new StringBuilder()
-      .append(getKind().name()).append(":").append(getString());
+      .append(getKind().name()).append(":");
+    // Editing keys use private-use Unicode chars that are invisible in
+    // logs.  Append the enum name instead for readable debug output.
+    if (getKind() == Kind.Editing)
+      b.append(getEditing().name());
+    else
+      b.append(getString());
     if (_payload instanceof Describe)
       b.append(":").append(((Describe)_payload).describe());
     return b.toString();
