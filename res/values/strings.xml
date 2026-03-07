@@ -3,7 +3,7 @@
     <string name="app_name_release">Overboard</string>
     <string name="app_name_debug">Overboard (Debug)</string>
     <string name="short_description">Transparent overlay keyboard for small-screen Android devices.</string>
-    <string name="store_description">Overboard is a transparent overlay keyboard designed for phones with square aspect ratios. It renders as a system overlay so your apps never resize when the keyboard appears.\n\nBased on Unexpected Keyboard. Contains no ads, no network requests, fully open source.</string>
+    <string name="store_description">Overboard is a transparent overlay keyboard designed for phones with square aspect ratios. It renders as a system overlay so your apps never resize when the keyboard appears.\n\nBased on Unexpected Keyboard. Contains no ads, fully open source. Internet is only used to download optional dictionaries.</string>
     <string name="pref_portrait">In portrait mode</string>
     <string name="pref_portrait_unfolded">In portrait mode unfolded</string>
     <string name="pref_landscape">In landscape mode</string>
@@ -180,7 +180,7 @@
     <string name="pref_clipboard_history_duration_30">At most 30 minutes</string>
     <string name="pref_clipboard_history_duration_stop">Until the app stops</string>
     <string name="pref_dialog_edit_text">Custom definition</string>
-    <string name="dictionaries_from_internet">Download a dictionary from the Internet</string>
+    <string name="dictionaries_from_internet">Download a dictionary from the Internet. Dictionaries are fetched from GitHub and stored locally on your device. No other network requests are made.</string>
     <string name="dictionaries_download_success">Dictionary installed</string>
     <string name="dictionaries_download_failed">Download failed</string>
     <string name="candidates_status_no_dict">No dictionary installed</string>

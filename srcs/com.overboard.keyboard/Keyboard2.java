@@ -313,6 +313,15 @@ public class Keyboard2 extends InputMethodService
       _overlayManager.setSecure(isPasswordInputType(info));
     if (useOverlayMode())
     {
+      // Firefox (and WebView-based browsers) send a dummy onStartInputView
+      // with inputType=0 (TYPE_NULL) as a focus signal before following up
+      // ~50ms later with the real inputType.  Showing the overlay for the
+      // dummy call creates a partially-initialized view hierarchy that the
+      // second call then corrupts via replaceView.  Skip the overlay for
+      // TYPE_NULL to avoid this.
+      if (info.inputType == InputType.TYPE_NULL)
+        return;
+
       // Layer 3: Skip show when text is already selected (e.g. long-press
       // selection in progress). The keyboard will appear later when the
       // selection clears (handled in onUpdateSelection).

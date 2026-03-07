@@ -127,7 +127,9 @@ public class OverlayManager
     {
       _contentLayout = null;
       detachFromParent(view);
-      _overlayContainer.addView(view);
+      _overlayContainer.addView(view, new FrameLayout.LayoutParams(
+          ViewGroup.LayoutParams.MATCH_PARENT,
+          ViewGroup.LayoutParams.WRAP_CONTENT));
     }
 
     try
@@ -160,19 +162,21 @@ public class OverlayManager
     }
     try
     {
-      detachFromParent(view);
       if (_contentLayout != null)
       {
-        // Guard: Firefox (and WebView-based browsers) can send two rapid
-        // onStartInputView calls — the first with inputType=0 partially sets
-        // up the view hierarchy, and a restarting=true call follows ~50ms
-        // later.  If the child at _keyboardViewIndex was never fully attached,
-        // removeViewAt triggers an NPE inside ViewGroup.unFocus.
+        // If the view is already at the correct position, nothing to do.
         if (_keyboardViewIndex < _contentLayout.getChildCount()
-            && _contentLayout.getChildAt(_keyboardViewIndex) != null)
-        {
+            && _contentLayout.getChildAt(_keyboardViewIndex) == view)
+          return;
+        // Remove the old child BEFORE detaching the new view from its
+        // parent.  If view happens to be inside _contentLayout already
+        // (e.g. Firefox's rapid onStartInputView re-calls pass the same
+        // _container_view), detaching it first would shift child indices
+        // and cause removeViewAt to remove the wrong child (the collapse
+        // button), corrupting the view hierarchy.
+        if (_keyboardViewIndex < _contentLayout.getChildCount())
           _contentLayout.removeViewAt(_keyboardViewIndex);
-        }
+        detachFromParent(view);
         LinearLayout.LayoutParams viewParams = new LinearLayout.LayoutParams(
             0, ViewGroup.LayoutParams.WRAP_CONTENT, 1.0f);
         view.setLayoutParams(viewParams);
@@ -180,8 +184,15 @@ public class OverlayManager
       }
       else
       {
+        // If the view is already the only child, nothing to do.
+        if (_overlayContainer.getChildCount() == 1
+            && _overlayContainer.getChildAt(0) == view)
+          return;
         _overlayContainer.removeAllViews();
-        _overlayContainer.addView(view);
+        detachFromParent(view);
+        _overlayContainer.addView(view, new FrameLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT));
       }
     }
     catch (Exception e)
