@@ -198,6 +198,14 @@ public class OverlayManager
     catch (Exception e)
     {
       Logs.exn("OverlayManager.replaceView", e);
+      // Safety valve: if an exception left the overlay with no keyboard
+      // content, hide it immediately rather than leaving an empty overlay
+      // that blocks the entire screen from touch input.
+      boolean empty = (_contentLayout != null)
+          ? _keyboardViewIndex >= _contentLayout.getChildCount()
+          : _overlayContainer.getChildCount() == 0;
+      if (empty)
+        hide();
     }
   }
 
