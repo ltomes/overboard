@@ -21,8 +21,8 @@ android {
     applicationId = "com.overboard.keyboard"
     minSdk = 21
     targetSdk { version = release(35) }
-    versionCode = 4
-    versionName = "0.2.0"
+    versionCode = 5
+    versionName = "0.2.1"
   }
 
   sourceSets {
