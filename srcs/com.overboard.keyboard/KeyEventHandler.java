@@ -101,6 +101,7 @@ public final class KeyEventHandler
   {
     if (key == null)
       return;
+    Logs.debug("key_up: " + key);
     Pointers.Modifiers old_mods = _mods;
     update_meta_state(mods);
     switch (key.getKind())

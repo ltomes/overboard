@@ -185,4 +185,9 @@
     <string name="dictionaries_download_failed">Download failed</string>
     <string name="candidates_status_no_dict">No dictionary installed</string>
     <string name="candidates_status_install">Install</string>
+    <string name="pref_category_debug">Debug</string>
+    <string name="pref_debug_logging_title">Enable debug logging</string>
+    <string name="pref_debug_logging_summary">Write debug logs to a file for crash diagnosis</string>
+    <string name="pref_share_log_title">Share debug log</string>
+    <string name="pref_share_log_summary">Export the debug log file for analysis</string>
 </resources>

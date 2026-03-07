@@ -74,6 +74,7 @@ public class OverlayManager
   /** Show the given view in the overlay window. */
   public void show(View view, Config.Handedness handedness, boolean collapseEnabled)
   {
+    Logs.debug("OverlayManager.show");
     _handedness = handedness;
     _collapseEnabled = collapseEnabled;
 
@@ -146,6 +147,7 @@ public class OverlayManager
   /** Replace the view inside the overlay without recreating the window. */
   public void replaceView(View view)
   {
+    Logs.debug("OverlayManager.replaceView");
     if (!_isShowing || _overlayContainer == null)
       return;
     if (_overlayContainer.getWindowToken() == null)
@@ -182,6 +184,7 @@ public class OverlayManager
   /** Hide and remove the overlay window. */
   public void hide()
   {
+    Logs.debug("OverlayManager.hide");
     if (!_isShowing || _overlayContainer == null)
       return;
     try

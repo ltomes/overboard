@@ -141,6 +141,10 @@ public class Keyboard2 extends InputMethodService
     _config.handler = _keyeventhandler;
     prefs.registerOnSharedPreferenceChangeListener(this);
     Logs.set_debug_logs(getResources().getBoolean(R.bool.debug_logs));
+    if (prefs.getBoolean("debug_logging", false))
+      Logs.start_file_logging(this);
+    Logs.install_crash_handler();
+    Logs.debug("Keyboard2.onCreate");
     refreshSubtypeImm();
     create_keyboard_view();
     ClipboardHistoryService.on_startup(this, _keyeventhandler);
@@ -156,6 +160,7 @@ public class Keyboard2 extends InputMethodService
   @Override
   public void onDestroy() {
     super.onDestroy();
+    Logs.debug("Keyboard2.onDestroy");
     cancelPendingShow();
     if (_keyeventhandler != null)
       _keyeventhandler.destroy();
@@ -222,6 +227,7 @@ public class Keyboard2 extends InputMethodService
       [setInputView()] must be called soon after. */
   private void refresh_config()
   {
+    Logs.debug("refresh_config");
     int prev_theme = _config.theme;
     _config.refresh(getResources(), _foldStateTracker.isUnfolded(), _dictionaries);
     refresh_current_dictionary();
@@ -294,6 +300,7 @@ public class Keyboard2 extends InputMethodService
   @Override
   public void onStartInputView(EditorInfo info, boolean restarting)
   {
+    Logs.debug("onStartInputView restarting=" + restarting + " overlay=" + useOverlayMode());
     _config.editor_config.refresh(info, getResources());
     refresh_config();
     _currentSpecialLayout = refresh_special_layout();
@@ -453,6 +460,7 @@ public class Keyboard2 extends InputMethodService
   @Override
   public void onConfigurationChanged(Configuration newConfig)
   {
+    Logs.debug("onConfigurationChanged");
     super.onConfigurationChanged(newConfig);
     if (_overlayManager != null && _overlayManager.isShowing())
       _overlayManager.updateLayout();
@@ -496,6 +504,7 @@ public class Keyboard2 extends InputMethodService
   @Override
   public void onFinishInputView(boolean finishingInput)
   {
+    Logs.debug("onFinishInputView");
     super.onFinishInputView(finishingInput);
     cancelPendingShow();
     _selectionActive = false;
@@ -526,6 +535,11 @@ public class Keyboard2 extends InputMethodService
   @Override
   public void onSharedPreferenceChanged(SharedPreferences _prefs, String _key)
   {
+    boolean fileLogging = _prefs.getBoolean("debug_logging", false);
+    if (fileLogging && !Logs.is_file_logging())
+      Logs.start_file_logging(this);
+    else if (!fileLogging && Logs.is_file_logging())
+      Logs.stop_file_logging();
     refresh_config();
     _keyboardView.setKeyboard(current_layout());
   }
