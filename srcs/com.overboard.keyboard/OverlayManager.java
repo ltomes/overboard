@@ -374,6 +374,9 @@ public class OverlayManager
   {
     private final Paint _paint;
     private final boolean _pointsRight;
+    private final Path _chevronPath = new Path();
+    /** Last known size; used to rebuild the path only on size changes. */
+    private int _cachedW, _cachedH;
 
     CollapseButtonView(Context context, boolean pointsRight)
     {
@@ -392,26 +395,31 @@ public class OverlayManager
     protected void onDraw(Canvas canvas)
     {
       super.onDraw(canvas);
-      float w = getWidth();
-      float h = getHeight();
-      float cx = w / 2f;
-      float cy = h / 2f;
-      float chevronH = 12f;
-      float chevronW = 6f;
-      Path path = new Path();
-      if (_pointsRight)
+      int w = getWidth();
+      int h = getHeight();
+      if (w != _cachedW || h != _cachedH)
       {
-        path.moveTo(cx - chevronW, cy - chevronH);
-        path.lineTo(cx + chevronW, cy);
-        path.lineTo(cx - chevronW, cy + chevronH);
+        _cachedW = w;
+        _cachedH = h;
+        float cx = w / 2f;
+        float cy = h / 2f;
+        float chevronH = 12f;
+        float chevronW = 6f;
+        _chevronPath.reset();
+        if (_pointsRight)
+        {
+          _chevronPath.moveTo(cx - chevronW, cy - chevronH);
+          _chevronPath.lineTo(cx + chevronW, cy);
+          _chevronPath.lineTo(cx - chevronW, cy + chevronH);
+        }
+        else
+        {
+          _chevronPath.moveTo(cx + chevronW, cy - chevronH);
+          _chevronPath.lineTo(cx - chevronW, cy);
+          _chevronPath.lineTo(cx + chevronW, cy + chevronH);
+        }
       }
-      else
-      {
-        path.moveTo(cx + chevronW, cy - chevronH);
-        path.lineTo(cx - chevronW, cy);
-        path.lineTo(cx + chevronW, cy + chevronH);
-      }
-      canvas.drawPath(path, _paint);
+      canvas.drawPath(_chevronPath, _paint);
     }
   }
 }

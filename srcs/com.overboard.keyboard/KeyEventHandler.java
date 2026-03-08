@@ -294,9 +294,15 @@ public final class KeyEventHandler
     try
     {
       conn.beginBatchEdit();
-      conn.deleteSurroundingText(remove_length, 0);
-      conn.commitText(new_text, 1);
-      conn.endBatchEdit();
+      try
+      {
+        conn.deleteSurroundingText(remove_length, 0);
+        conn.commitText(new_text, 1);
+      }
+      finally
+      {
+        conn.endBatchEdit();
+      }
     }
     catch (Exception e)
     {
