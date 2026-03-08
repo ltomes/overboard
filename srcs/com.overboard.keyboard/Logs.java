@@ -51,8 +51,16 @@ public final class Logs
       _logHandler = new Handler(_logThread.getLooper());
       _logWriter = new PrintWriter(new FileWriter(_logFile, true), false);
       _file_logging_active = true;
-      // Write header
+      // Write header with app version for correlating logs with releases
+      String appVersion = "unknown";
+      try
+      {
+        appVersion = ctx.getPackageManager()
+            .getPackageInfo(ctx.getPackageName(), 0).versionName;
+      }
+      catch (Exception e) { /* ignore */ }
       write_to_file("=== Debug logging started ===");
+      write_to_file("App: " + appVersion);
       write_to_file("Device: " + Build.MANUFACTURER + " " + Build.MODEL);
       write_to_file("Android: " + Build.VERSION.RELEASE + " (SDK " + Build.VERSION.SDK_INT + ")");
     }

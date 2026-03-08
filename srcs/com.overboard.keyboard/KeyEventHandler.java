@@ -213,6 +213,11 @@ public final class KeyEventHandler
 
   void send_key_down_up(int keyCode)
   {
+    if (keyCode == 0)
+    {
+      Logs.debug("send_key_down_up: ignoring KEYCODE_UNKNOWN (0)");
+      return;
+    }
     send_key_down_up(keyCode, _meta_state);
   }
 
@@ -227,7 +232,10 @@ public final class KeyEventHandler
   {
     InputConnection conn = _recv.getCurrentInputConnection();
     if (conn == null)
+    {
+      Logs.debug("send_keyevent: no InputConnection, dropping keycode=" + eventCode);
       return;
+    }
     try
     {
       boolean ok = conn.sendKeyEvent(new KeyEvent(1, 1, eventAction, eventCode, 0,
@@ -256,7 +264,10 @@ public final class KeyEventHandler
   {
     InputConnection conn = _recv.getCurrentInputConnection();
     if (conn == null)
+    {
+      Logs.debug("send_text: no InputConnection, dropping text");
       return;
+    }
     _autocap.typed(text);
     _typedword.typed(text);
     try
