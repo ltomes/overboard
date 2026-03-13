@@ -68,6 +68,12 @@ public class Keyboard2View extends View
   private Paint _topGradientPaint;
   private float _topGradientHeight;
 
+  /** Cached key width used to detect when Theme.Computed must be rebuilt. */
+  private float _cachedKeyWidth = -1;
+  /** Cached gradient density*enabled state to avoid rebuilding the gradient. */
+  private float _cachedGradientDensity = -1;
+  private boolean _cachedGradientEnabled = false;
+
   /** Opacity multiplier [0.0, 1.0] for idle fade / peek mode. */
   private float _fadeMultiplier = 1.0f;
   private boolean _peekMode = false;
@@ -103,6 +109,7 @@ public class Keyboard2View extends View
   public void applyThemeStyle(int defStyleRes)
   {
     _theme = new Theme(getContext(), null, defStyleRes);
+    _tc = null; // Force Theme.Computed rebuild on next onMeasure
     requestLayout();
     invalidate();
   }
@@ -155,6 +162,7 @@ public class Keyboard2View extends View
   {
     _mods = Pointers.Modifiers.EMPTY;
     _pointers.clear();
+    _tc = null; // Force Theme.Computed rebuild on next onMeasure
     requestLayout();
     invalidate();
   }
@@ -195,7 +203,8 @@ public class Keyboard2View extends View
   public void onPointerDown(KeyValue k, boolean isSwipe)
   {
     updateFlags();
-    _config.handler.key_down(k, isSwipe);
+    if (_config.handler != null)
+      _config.handler.key_down(k, isSwipe);
     invalidate();
     vibrate();
   }
@@ -204,14 +213,16 @@ public class Keyboard2View extends View
   {
     // [key_up] must be called before [updateFlags]. The latter might disable
     // flags.
-    _config.handler.key_up(k, mods);
+    if (_config.handler != null)
+      _config.handler.key_up(k, mods);
     updateFlags();
     invalidate();
   }
 
   public void onPointerHold(KeyValue k, Pointers.Modifiers mods)
   {
-    _config.handler.key_up(k, mods);
+    if (_config.handler != null)
+      _config.handler.key_up(k, mods);
     updateFlags();
   }
 
@@ -226,7 +237,8 @@ public class Keyboard2View extends View
   private void updateFlags()
   {
     _mods = _pointers.getModifiers();
-    _config.handler.mods_changed(_mods);
+    if (_config.handler != null)
+      _config.handler.mods_changed(_mods);
   }
 
   @Override
@@ -320,7 +332,14 @@ public class Keyboard2View extends View
     if (specMode == MeasureSpec.UNSPECIFIED)
       width += _insets_left + _insets_right;
     _keyWidth = (width - _marginLeft - _marginRight) / _keyboard.keysWidth;
-    _tc = new Theme.Computed(_theme, _config, _keyWidth, _keyboard);
+    // Only rebuild Theme.Computed when the key width actually changed (it
+    // depends on _theme, _config, _keyWidth, and _keyboard).  onMeasure can
+    // be called multiple times per layout pass with the same inputs.
+    if (_tc == null || _keyWidth != _cachedKeyWidth)
+    {
+      _cachedKeyWidth = _keyWidth;
+      _tc = new Theme.Computed(_theme, _config, _keyWidth, _keyboard);
+    }
     // Compute the size of labels based on the width or the height of keys. The
     // margin around keys is taken into account. Keys normal aspect ratio is
     // assumed to be 3/2 for a 10 columns layout. It's generally more, the
@@ -335,22 +354,30 @@ public class Keyboard2View extends View
       (int)(_tc.row_height * _keyboard.keysHeight
           + _config.marginTop + _marginBottom);
     setMeasuredDimension(width, height);
-    // Top-edge gradient
+    // Top-edge gradient — only rebuild when density or enabled state changes
+    float density = dm.density;
     if (_config.topGradientEnabled)
     {
-      float gradH = 30 * dm.density;
-      _topGradientHeight = gradH;
-      _topGradientPaint = new Paint();
-      _topGradientPaint.setShader(new LinearGradient(
-          0, 0, 0, gradH,
-          0xFF000000, 0x00000000,
-          Shader.TileMode.CLAMP));
-      _topGradientPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_OUT));
+      if (_topGradientPaint == null || density != _cachedGradientDensity
+          || !_cachedGradientEnabled)
+      {
+        _cachedGradientDensity = density;
+        _cachedGradientEnabled = true;
+        float gradH = 30 * density;
+        _topGradientHeight = gradH;
+        _topGradientPaint = new Paint();
+        _topGradientPaint.setShader(new LinearGradient(
+            0, 0, 0, gradH,
+            0xFF000000, 0x00000000,
+            Shader.TileMode.CLAMP));
+        _topGradientPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_OUT));
+      }
     }
     else
     {
       _topGradientPaint = null;
       _topGradientHeight = 0;
+      _cachedGradientEnabled = false;
     }
   }
 

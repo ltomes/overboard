@@ -8,7 +8,11 @@ on:
   pull_request:
 
 jobs:
-  Build-Apk:
+  # Debug build: runs on PRs and manual triggers for development/testing.
+  # Debug builds have debug_logs=true, the Debug settings category visible,
+  # and a .debug application ID suffix.
+  Build-Debug:
+    if: "!startsWith(github.ref, 'refs/tags/v')"
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repo
@@ -17,10 +21,6 @@ jobs:
         submodules: true
     - name: Restore debug keystore from GitHub Secrets
       run: |
-        # Check if exist and use the secret named DEBUG_KEYSTORE
-        # The contents of the secret can be obtained -
-        #  from the debug.keystore.asc from you local folder 
-        #  (refer to CONTRIBUTING.md Using the local debug.keystore on the Github CI actions)
         if [[ ! "${{ secrets.DEBUG_KEYSTORE }}" = "" ]]; then
             echo "${{ secrets.DEBUG_KEYSTORE }}" > "debug.keystore.asc"
             if [[ -s "debug.keystore.asc" ]]; then
@@ -52,8 +52,52 @@ jobs:
         name: "${{env.artifact}} debug_apk"
         path: build/outputs/apk/debug/*.apk
 
+  # Release build: runs on version tags. Release builds have debug_logs=false,
+  # the Debug settings category hidden, minification enabled, and no .debug
+  # application ID suffix.
+  Build-Release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v6
+      with:
+        submodules: true
+    - name: Restore debug keystore from GitHub Secrets
+      run: |
+        if [[ ! "${{ secrets.DEBUG_KEYSTORE }}" = "" ]]; then
+            echo "${{ secrets.DEBUG_KEYSTORE }}" > "debug.keystore.asc"
+            if [[ -s "debug.keystore.asc" ]]; then
+                echo "Restoring debug keystore from GitHub secrets"
+                gpg -d --passphrase "debug0" --batch "debug.keystore.asc" > "debug.keystore"
+            fi
+        fi
+    - uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v4
+    - name: Build release APK
+      run: ./gradlew assembleRelease
+      env:
+        # Release signing keys from secrets, with debug keystore fallback
+        RELEASE_KEYSTORE: ${{ secrets.RELEASE_KEYSTORE_PATH || 'debug.keystore' }}
+        RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD || 'debug0' }}
+        RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS || 'debug' }}
+        RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD || 'debug0' }}
+        DEBUG_KEYSTORE: "debug.keystore"
+        DEBUG_KEYSTORE_PASSWORD: debug0
+        DEBUG_KEY_ALIAS: debug
+        DEBUG_KEY_PASSWORD: debug0
+    - name: Upload release APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: "Overboard-${{github.ref_name}}-release"
+        path: build/outputs/apk/release/*.apk
+
   Release:
-    needs: Build-Apk
+    needs: Build-Release
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     permissions:
@@ -62,14 +106,14 @@ jobs:
     - name: Download APK artifact
       uses: actions/download-artifact@v4
       with:
-        pattern: "*debug_apk"
+        pattern: "Overboard-*-release"
     - name: Create GitHub Release
       env:
         GH_TOKEN: ${{ github.token }}
       run: |
         apk=$(find . -name '*.apk' | head -1)
         gh release create "${{ github.ref_name }}" \
-          "$apk#Overboard-debug.apk" \
+          "$apk#Overboard-${{ github.ref_name }}.apk" \
           --repo "${{ github.repository }}" \
           --title "${{ github.ref_name }}" \
           --generate-notes

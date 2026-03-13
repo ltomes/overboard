@@ -74,6 +74,7 @@ public class OverlayManager
   /** Show the given view in the overlay window. */
   public void show(View view, Config.Handedness handedness, boolean collapseEnabled)
   {
+    Logs.debug("OverlayManager.show");
     _handedness = handedness;
     _collapseEnabled = collapseEnabled;
 
@@ -126,7 +127,9 @@ public class OverlayManager
     {
       _contentLayout = null;
       detachFromParent(view);
-      _overlayContainer.addView(view);
+      _overlayContainer.addView(view, new FrameLayout.LayoutParams(
+          ViewGroup.LayoutParams.MATCH_PARENT,
+          ViewGroup.LayoutParams.WRAP_CONTENT));
     }
 
     try
@@ -146,6 +149,7 @@ public class OverlayManager
   /** Replace the view inside the overlay without recreating the window. */
   public void replaceView(View view)
   {
+    Logs.debug("OverlayManager.replaceView");
     if (!_isShowing || _overlayContainer == null)
       return;
     if (_overlayContainer.getWindowToken() == null)
@@ -158,10 +162,21 @@ public class OverlayManager
     }
     try
     {
-      detachFromParent(view);
       if (_contentLayout != null)
       {
-        _contentLayout.removeViewAt(_keyboardViewIndex);
+        // If the view is already at the correct position, nothing to do.
+        if (_keyboardViewIndex < _contentLayout.getChildCount()
+            && _contentLayout.getChildAt(_keyboardViewIndex) == view)
+          return;
+        // Remove the old child BEFORE detaching the new view from its
+        // parent.  If view happens to be inside _contentLayout already
+        // (e.g. Firefox's rapid onStartInputView re-calls pass the same
+        // _container_view), detaching it first would shift child indices
+        // and cause removeViewAt to remove the wrong child (the collapse
+        // button), corrupting the view hierarchy.
+        if (_keyboardViewIndex < _contentLayout.getChildCount())
+          _contentLayout.removeViewAt(_keyboardViewIndex);
+        detachFromParent(view);
         LinearLayout.LayoutParams viewParams = new LinearLayout.LayoutParams(
             0, ViewGroup.LayoutParams.WRAP_CONTENT, 1.0f);
         view.setLayoutParams(viewParams);
@@ -169,21 +184,40 @@ public class OverlayManager
       }
       else
       {
+        // If the view is already the only child, nothing to do.
+        if (_overlayContainer.getChildCount() == 1
+            && _overlayContainer.getChildAt(0) == view)
+          return;
         _overlayContainer.removeAllViews();
-        _overlayContainer.addView(view);
+        detachFromParent(view);
+        _overlayContainer.addView(view, new FrameLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT));
       }
     }
     catch (Exception e)
     {
       Logs.exn("OverlayManager.replaceView", e);
+      // Safety valve: if an exception left the overlay with no keyboard
+      // content, hide it immediately rather than leaving an empty overlay
+      // that blocks the entire screen from touch input.
+      boolean empty = (_contentLayout != null)
+          ? _keyboardViewIndex >= _contentLayout.getChildCount()
+          : _overlayContainer.getChildCount() == 0;
+      if (empty)
+        hide();
     }
   }
 
-  /** Hide and remove the overlay window. */
+  /** Hide and remove the overlay window. No-op if not currently shown. */
   public void hide()
   {
     if (!_isShowing || _overlayContainer == null)
+    {
+      Logs.debug("OverlayManager.hide (already hidden)");
       return;
+    }
+    Logs.debug("OverlayManager.hide");
     try
     {
       if (_contentLayout != null)
@@ -340,6 +374,9 @@ public class OverlayManager
   {
     private final Paint _paint;
     private final boolean _pointsRight;
+    private final Path _chevronPath = new Path();
+    /** Last known size; used to rebuild the path only on size changes. */
+    private int _cachedW, _cachedH;
 
     CollapseButtonView(Context context, boolean pointsRight)
     {
@@ -358,26 +395,31 @@ public class OverlayManager
     protected void onDraw(Canvas canvas)
     {
       super.onDraw(canvas);
-      float w = getWidth();
-      float h = getHeight();
-      float cx = w / 2f;
-      float cy = h / 2f;
-      float chevronH = 12f;
-      float chevronW = 6f;
-      Path path = new Path();
-      if (_pointsRight)
+      int w = getWidth();
+      int h = getHeight();
+      if (w != _cachedW || h != _cachedH)
       {
-        path.moveTo(cx - chevronW, cy - chevronH);
-        path.lineTo(cx + chevronW, cy);
-        path.lineTo(cx - chevronW, cy + chevronH);
+        _cachedW = w;
+        _cachedH = h;
+        float cx = w / 2f;
+        float cy = h / 2f;
+        float chevronH = 12f;
+        float chevronW = 6f;
+        _chevronPath.reset();
+        if (_pointsRight)
+        {
+          _chevronPath.moveTo(cx - chevronW, cy - chevronH);
+          _chevronPath.lineTo(cx + chevronW, cy);
+          _chevronPath.lineTo(cx - chevronW, cy + chevronH);
+        }
+        else
+        {
+          _chevronPath.moveTo(cx + chevronW, cy - chevronH);
+          _chevronPath.lineTo(cx - chevronW, cy);
+          _chevronPath.lineTo(cx + chevronW, cy + chevronH);
+        }
       }
-      else
-      {
-        path.moveTo(cx + chevronW, cy - chevronH);
-        path.lineTo(cx - chevronW, cy);
-        path.lineTo(cx + chevronW, cy + chevronH);
-      }
-      canvas.drawPath(path, _paint);
+      canvas.drawPath(_chevronPath, _paint);
     }
   }
 }

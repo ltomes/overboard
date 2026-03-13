@@ -171,7 +171,7 @@ public final class Config
     // Label brightness is used as the alpha channel
     labelBrightness = _prefs.getInt("label_brightness", 100) * 255 / 100;
     // Keyboard opacity
-    keyboardOpacity = _prefs.getInt("keyboard_opacity", 100) * 255 / 100;
+    keyboardOpacity = _prefs.getInt("keyboard_opacity", 9) * 255 / 100;
     keyOpacity = _prefs.getInt("key_opacity", 100) * 255 / 100;
     keyActivatedOpacity = _prefs.getInt("key_activated_opacity", 100) * 255 / 100;
     // keyboard border settings
@@ -191,7 +191,7 @@ public final class Config
     characterSize =
       _prefs.getFloat("character_size", 1.15f)
       * characterSizeScale;
-    theme = getThemeId(res, _prefs.getString("theme", "system"));
+    theme = getThemeId(res, _prefs.getString("theme", "showcase"));
     autocapitalisation = _prefs.getBoolean("autocapitalisation", true);
     change_method_key_replacement = get_change_method_key_replacement(_prefs);
     extra_keys_param = ExtraKeysPreference.get_extra_keys(_prefs);
@@ -210,7 +210,7 @@ public final class Config
     idleFadeEnabled = _prefs.getBoolean("idle_fade_enabled", true);
     idleFadeTimeout = _prefs.getInt("idle_fade_timeout", 5) * 1000L;
     collapseButtonEnabled = _prefs.getBoolean("collapse_button", true);
-    handedness = "left".equals(_prefs.getString("handedness", "right"))
+    handedness = "left".equals(_prefs.getString("handedness", "left"))
         ? Handedness.LEFT : Handedness.RIGHT;
 
     float screen_width_dp = dm.widthPixels / dm.density;
@@ -266,11 +266,22 @@ public final class Config
     return get_dip_pref(dm, pref_base_name + suffix, def);
   }
 
+  /** Themes cycled through by the "showcase" option. */
+  private static final int[] SHOWCASE_THEMES = {
+    R.style.MitoTTY, R.style.MitoPulse, R.style.MitoMT3,
+    R.style.PBTfansXRay, R.style.TaiHaoMiami
+  };
+  private static int _showcaseIndex = 0;
+
   public static int getThemeId(Resources res, String theme_name)
   {
     int night_mode = res.getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
     switch (theme_name)
     {
+      case "showcase":
+        int t = SHOWCASE_THEMES[_showcaseIndex % SHOWCASE_THEMES.length];
+        _showcaseIndex++;
+        return t;
       case "light": return R.style.Light;
       case "black": return R.style.Black;
       case "altblack": return R.style.AltBlack;
@@ -349,9 +360,9 @@ public final class Config
   public static void migrate(SharedPreferences prefs)
   {
     int saved_version = prefs.getInt("version", 0);
-    Logs.debug_config_migration(saved_version, CONFIG_VERSION);
     if (saved_version == CONFIG_VERSION)
       return;
+    Logs.debug_config_migration(saved_version, CONFIG_VERSION);
     SharedPreferences.Editor e = prefs.edit();
     e.putInt("version", CONFIG_VERSION);
     // Migrations might run on an empty [prefs] for new installs, in this case

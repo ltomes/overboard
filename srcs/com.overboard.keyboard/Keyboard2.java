@@ -34,6 +34,10 @@ import juloo.cdict.Cdict;
 public class Keyboard2 extends InputMethodService
   implements SharedPreferences.OnSharedPreferenceChangeListener
 {
+  /** Singleton guard: tracks the most recent instance so that a ghost instance
+      left alive after a configuration-change race can be cleaned up. */
+  private static Keyboard2 sInstance;
+
   /** The view containing the keyboard and candidates view. */
   private ViewGroup _container_view;
   private Keyboard2View _keyboardView;
@@ -60,8 +64,6 @@ public class Keyboard2 extends InputMethodService
       doesn't resize when the keyboard appears. */
   private View _placeholderView;
 
-  /** Pending delayed show for overlay (Layer 1 of text-interaction protection). */
-  private Runnable _pendingShow;
   /** Whether text was selected last time we checked (for selection-aware fade). */
   private boolean _selectionActive;
 
@@ -130,6 +132,19 @@ public class Keyboard2 extends InputMethodService
   public void onCreate()
   {
     super.onCreate();
+    // Kill any ghost instance's overlay left alive by a configuration-change
+    // race (Bug 1: old instance never gets onDestroy on some Samsung/Android 16
+    // devices, leaving a dangling overlay window that duplicates key events).
+    if (sInstance != null && sInstance != this)
+    {
+      Logs.debug("Keyboard2.onCreate: destroying ghost instance");
+      sInstance.destroyOverlay();
+      // Disconnect the ghost's key event handler so stale touch events on
+      // its (now hidden) overlay cannot generate key_up calls.
+      if (sInstance._config != null)
+        sInstance._config.handler = null;
+    }
+    sInstance = this;
     SharedPreferences prefs = DirectBootAwarePreferences.get_shared_preferences(this);
     _handler = new Handler(getMainLooper());
     _foldStateTracker = new FoldStateTracker(this);
@@ -141,6 +156,11 @@ public class Keyboard2 extends InputMethodService
     _config.handler = _keyeventhandler;
     prefs.registerOnSharedPreferenceChangeListener(this);
     Logs.set_debug_logs(getResources().getBoolean(R.bool.debug_logs));
+    if (getResources().getBoolean(R.bool.debug_logs)
+        && prefs.getBoolean("debug_logging", false))
+      Logs.start_file_logging(this);
+    Logs.install_crash_handler();
+    Logs.debug("Keyboard2.onCreate");
     refreshSubtypeImm();
     create_keyboard_view();
     ClipboardHistoryService.on_startup(this, _keyeventhandler);
@@ -156,13 +176,21 @@ public class Keyboard2 extends InputMethodService
   @Override
   public void onDestroy() {
     super.onDestroy();
-    cancelPendingShow();
+    Logs.debug("Keyboard2.onDestroy");
+    if (sInstance == this)
+      sInstance = null;
+    destroyOverlay();
+    try { _foldStateTracker.close(); }
+    catch (Exception e) { Logs.exn("onDestroy: FoldStateTracker", e); }
+  }
+
+  /** Tear down overlay and pending callbacks. Safe to call multiple times. */
+  private void destroyOverlay()
+  {
     if (_keyeventhandler != null)
       _keyeventhandler.destroy();
     if (_overlayManager != null)
       _overlayManager.hide();
-    try { _foldStateTracker.close(); }
-    catch (Exception e) { Logs.exn("onDestroy: FoldStateTracker", e); }
   }
 
   private void create_keyboard_view()
@@ -222,6 +250,7 @@ public class Keyboard2 extends InputMethodService
       [setInputView()] must be called soon after. */
   private void refresh_config()
   {
+    Logs.debug("refresh_config");
     int prev_theme = _config.theme;
     _config.refresh(getResources(), _foldStateTracker.isUnfolded(), _dictionaries);
     refresh_current_dictionary();
@@ -294,18 +323,27 @@ public class Keyboard2 extends InputMethodService
   @Override
   public void onStartInputView(EditorInfo info, boolean restarting)
   {
+    Logs.debug("onStartInputView restarting=" + restarting + " overlay=" + useOverlayMode());
     _config.editor_config.refresh(info, getResources());
     refresh_config();
     _currentSpecialLayout = refresh_special_layout();
     _keyboardView.setKeyboard(current_layout());
     _keyeventhandler.started(_config);
-    cancelPendingShow();
     // Set FLAG_SECURE on overlay when typing in password fields to prevent
     // screen capture of sensitive input.
     if (_overlayManager != null)
       _overlayManager.setSecure(isPasswordInputType(info));
     if (useOverlayMode())
     {
+      // Firefox (and WebView-based browsers) send a dummy onStartInputView
+      // with inputType=0 (TYPE_NULL) as a focus signal before following up
+      // ~50ms later with the real inputType.  Showing the overlay for the
+      // dummy call creates a partially-initialized view hierarchy that the
+      // second call then corrupts via replaceView.  Skip the overlay for
+      // TYPE_NULL to avoid this.
+      if (info.inputType == InputType.TYPE_NULL)
+        return;
+
       // Layer 3: Skip show when text is already selected (e.g. long-press
       // selection in progress). The keyboard will appear later when the
       // selection clears (handled in onUpdateSelection).
@@ -314,26 +352,8 @@ public class Keyboard2 extends InputMethodService
           && info.initialSelStart != info.initialSelEnd)
         return;
 
-      // Layer 1: When restarting and the overlay is not already showing,
-      // delay the show by 400ms so that long-press menus and text selection
-      // handles have time to appear without the keyboard covering them.
-      if (restarting && !_overlayManager.isShowing())
-      {
-        _pendingShow = () -> {
-          _pendingShow = null;
-          // Guard: editor may have disconnected during the delay
-          if (getCurrentInputConnection() == null)
-            return;
-          _overlayManager.show(_container_view, _config.handedness,
-              _config.collapseButtonEnabled);
-        };
-        _handler.postDelayed(_pendingShow, 400);
-      }
-      else
-      {
-        _overlayManager.show(_container_view, _config.handedness,
-            _config.collapseButtonEnabled);
-      }
+      _overlayManager.show(_container_view, _config.handedness,
+          _config.collapseButtonEnabled);
     }
     else
     {
@@ -453,6 +473,7 @@ public class Keyboard2 extends InputMethodService
   @Override
   public void onConfigurationChanged(Configuration newConfig)
   {
+    Logs.debug("onConfigurationChanged");
     super.onConfigurationChanged(newConfig);
     if (_overlayManager != null && _overlayManager.isShowing())
       _overlayManager.updateLayout();
@@ -496,8 +517,8 @@ public class Keyboard2 extends InputMethodService
   @Override
   public void onFinishInputView(boolean finishingInput)
   {
+    Logs.debug("onFinishInputView");
     super.onFinishInputView(finishingInput);
-    cancelPendingShow();
     _selectionActive = false;
     _keyboardView.reset();
     if (_overlayManager != null)
@@ -508,24 +529,24 @@ public class Keyboard2 extends InputMethodService
   public void onWindowHidden()
   {
     super.onWindowHidden();
-    cancelPendingShow();
     _selectionActive = false;
-    if (_overlayManager != null)
+    // Only hide if still showing — onFinishInputView already hides in the
+    // normal close path, so this avoids the redundant double-hide.
+    if (_overlayManager != null && _overlayManager.isShowing())
       _overlayManager.hide();
-  }
-
-  private void cancelPendingShow()
-  {
-    if (_pendingShow != null)
-    {
-      _handler.removeCallbacks(_pendingShow);
-      _pendingShow = null;
-    }
   }
 
   @Override
   public void onSharedPreferenceChanged(SharedPreferences _prefs, String _key)
   {
+    if (getResources().getBoolean(R.bool.debug_logs))
+    {
+      boolean fileLogging = _prefs.getBoolean("debug_logging", false);
+      if (fileLogging && !Logs.is_file_logging())
+        Logs.start_file_logging(this);
+      else if (!fileLogging && Logs.is_file_logging())
+        Logs.stop_file_logging();
+    }
     refresh_config();
     _keyboardView.setKeyboard(current_layout());
   }
