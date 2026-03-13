@@ -203,7 +203,8 @@ public class Keyboard2View extends View
   public void onPointerDown(KeyValue k, boolean isSwipe)
   {
     updateFlags();
-    _config.handler.key_down(k, isSwipe);
+    if (_config.handler != null)
+      _config.handler.key_down(k, isSwipe);
     invalidate();
     vibrate();
   }
@@ -212,14 +213,16 @@ public class Keyboard2View extends View
   {
     // [key_up] must be called before [updateFlags]. The latter might disable
     // flags.
-    _config.handler.key_up(k, mods);
+    if (_config.handler != null)
+      _config.handler.key_up(k, mods);
     updateFlags();
     invalidate();
   }
 
   public void onPointerHold(KeyValue k, Pointers.Modifiers mods)
   {
-    _config.handler.key_up(k, mods);
+    if (_config.handler != null)
+      _config.handler.key_up(k, mods);
     updateFlags();
   }
 
@@ -234,7 +237,8 @@ public class Keyboard2View extends View
   private void updateFlags()
   {
     _mods = _pointers.getModifiers();
-    _config.handler.mods_changed(_mods);
+    if (_config.handler != null)
+      _config.handler.mods_changed(_mods);
   }
 
   @Override

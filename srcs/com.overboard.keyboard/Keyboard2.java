@@ -64,8 +64,6 @@ public class Keyboard2 extends InputMethodService
       doesn't resize when the keyboard appears. */
   private View _placeholderView;
 
-  /** Pending delayed show for overlay (Layer 1 of text-interaction protection). */
-  private Runnable _pendingShow;
   /** Whether text was selected last time we checked (for selection-aware fade). */
   private boolean _selectionActive;
 
@@ -139,8 +137,12 @@ public class Keyboard2 extends InputMethodService
     // devices, leaving a dangling overlay window that duplicates key events).
     if (sInstance != null && sInstance != this)
     {
-      Logs.debug("Keyboard2.onCreate: destroying ghost instance overlay");
+      Logs.debug("Keyboard2.onCreate: destroying ghost instance");
       sInstance.destroyOverlay();
+      // Disconnect the ghost's key event handler so stale touch events on
+      // its (now hidden) overlay cannot generate key_up calls.
+      if (sInstance._config != null)
+        sInstance._config.handler = null;
     }
     sInstance = this;
     SharedPreferences prefs = DirectBootAwarePreferences.get_shared_preferences(this);
@@ -185,7 +187,6 @@ public class Keyboard2 extends InputMethodService
   /** Tear down overlay and pending callbacks. Safe to call multiple times. */
   private void destroyOverlay()
   {
-    cancelPendingShow();
     if (_keyeventhandler != null)
       _keyeventhandler.destroy();
     if (_overlayManager != null)
@@ -328,7 +329,6 @@ public class Keyboard2 extends InputMethodService
     _currentSpecialLayout = refresh_special_layout();
     _keyboardView.setKeyboard(current_layout());
     _keyeventhandler.started(_config);
-    cancelPendingShow();
     // Set FLAG_SECURE on overlay when typing in password fields to prevent
     // screen capture of sensitive input.
     if (_overlayManager != null)
@@ -352,27 +352,8 @@ public class Keyboard2 extends InputMethodService
           && info.initialSelStart != info.initialSelEnd)
         return;
 
-      // Layer 1: When restarting and the overlay is not already showing,
-      // delay the show by 50ms so that rapid onStartInputView pairs
-      // (e.g. Firefox's dummy TYPE_NULL + real inputType) settle before
-      // we create the overlay window.
-      if (restarting && !_overlayManager.isShowing())
-      {
-        _pendingShow = () -> {
-          _pendingShow = null;
-          // Guard: editor may have disconnected during the delay
-          if (getCurrentInputConnection() == null)
-            return;
-          _overlayManager.show(_container_view, _config.handedness,
-              _config.collapseButtonEnabled);
-        };
-        _handler.postDelayed(_pendingShow, 50);
-      }
-      else
-      {
-        _overlayManager.show(_container_view, _config.handedness,
-            _config.collapseButtonEnabled);
-      }
+      _overlayManager.show(_container_view, _config.handedness,
+          _config.collapseButtonEnabled);
     }
     else
     {
@@ -538,7 +519,6 @@ public class Keyboard2 extends InputMethodService
   {
     Logs.debug("onFinishInputView");
     super.onFinishInputView(finishingInput);
-    cancelPendingShow();
     _selectionActive = false;
     _keyboardView.reset();
     if (_overlayManager != null)
@@ -549,19 +529,11 @@ public class Keyboard2 extends InputMethodService
   public void onWindowHidden()
   {
     super.onWindowHidden();
-    cancelPendingShow();
     _selectionActive = false;
-    if (_overlayManager != null)
+    // Only hide if still showing — onFinishInputView already hides in the
+    // normal close path, so this avoids the redundant double-hide.
+    if (_overlayManager != null && _overlayManager.isShowing())
       _overlayManager.hide();
-  }
-
-  private void cancelPendingShow()
-  {
-    if (_pendingShow != null)
-    {
-      _handler.removeCallbacks(_pendingShow);
-      _pendingShow = null;
-    }
   }
 
   @Override
