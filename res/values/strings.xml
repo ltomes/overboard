@@ -2,8 +2,24 @@
 <resources>
     <string name="app_name_release">Overboard</string>
     <string name="app_name_debug">Overboard (Debug)</string>
+    <string name="key_action_service_label">Overboard physical keys</string>
+    <string name="key_action_service_desc">Lets Overboard map physical hardware keys (such as the programmable key) to actions like launching apps or voice input, even when the keyboard is not showing.</string>
+    <string name="pref_category_physical_keys">Physical keys</string>
+    <string name="pref_physical_keys_enabled_title">Enable physical key actions</string>
+    <string name="pref_physical_keys_enabled_summary">Map a hardware key (e.g. the programmable key) to actions. Requires the \"Overboard physical keys\" accessibility service.</string>
+    <string name="pref_physical_key_voice_when_open_title">Voice typing while keyboard is open</string>
+    <string name="pref_physical_key_voice_when_open_summary">While the keyboard is showing, a tap of the key starts voice typing (the gesture actions below apply only when the keyboard is hidden).</string>
+    <string name="pref_physical_key_single_tap_title">Single tap</string>
+    <string name="pref_physical_key_double_tap_title">Double tap</string>
+    <string name="pref_physical_key_long_press_title">Long press</string>
+    <string name="pref_physical_key_keycode_title">Trigger key (advanced)</string>
+    <string name="pref_physical_key_keycode_summary">Android keycode of the hardware key to listen for. Default 131 is the MindOne programmable key (F1).</string>
+    <string name="pref_physical_key_action_e_none">None</string>
+    <string name="pref_physical_key_action_e_voice">Voice typing</string>
+    <string name="pref_physical_key_action_e_ha_dashboard">Home Assistant dashboard</string>
+    <string name="pref_physical_key_action_e_ha_assist">Home Assistant Assist (voice)</string>
     <string name="short_description">Transparent overlay keyboard for small-screen Android devices.</string>
-    <string name="store_description">Overboard is a transparent overlay keyboard designed for phones with square aspect ratios. It renders as a system overlay so your apps never resize when the keyboard appears.\n\nBased on Unexpected Keyboard. Contains no ads, no network requests, fully open source.</string>
+    <string name="store_description">Overboard is a transparent overlay keyboard designed for phones with square aspect ratios. It renders as a system overlay so your apps never resize when the keyboard appears.\n\nBased on Unexpected Keyboard. Contains no ads, fully open source. Internet is only used to download optional dictionaries.</string>
     <string name="pref_portrait">In portrait mode</string>
     <string name="pref_portrait_unfolded">In portrait mode unfolded</string>
     <string name="pref_landscape">In landscape mode</string>
@@ -66,6 +82,7 @@
     <string name="pref_character_size_title">Label size</string>
     <string name="pref_character_size_summary">Size of characters displayed on the keyboard (%.2fx)</string>
     <string name="pref_theme">Theme</string>
+    <string name="pref_theme_e_showcase">Showcase (cycles keycap themes)</string>
     <string name="pref_theme_e_system">System settings</string>
     <string name="pref_theme_e_dark">Dark</string>
     <string name="pref_theme_e_light">Light</string>
@@ -180,9 +197,14 @@
     <string name="pref_clipboard_history_duration_30">At most 30 minutes</string>
     <string name="pref_clipboard_history_duration_stop">Until the app stops</string>
     <string name="pref_dialog_edit_text">Custom definition</string>
-    <string name="dictionaries_from_internet">Download a dictionary from the Internet</string>
+    <string name="dictionaries_from_internet">Download a dictionary from the Internet. Dictionaries are fetched from GitHub and stored locally on your device. No other network requests are made.</string>
     <string name="dictionaries_download_success">Dictionary installed</string>
     <string name="dictionaries_download_failed">Download failed</string>
     <string name="candidates_status_no_dict">No dictionary installed</string>
     <string name="candidates_status_install">Install</string>
+    <string name="pref_category_debug">Debug</string>
+    <string name="pref_debug_logging_title">Enable debug logging</string>
+    <string name="pref_debug_logging_summary">Write debug logs to a file for crash diagnosis</string>
+    <string name="pref_share_log_title">Share debug log</string>
+    <string name="pref_share_log_summary">Export the debug log file for analysis</string>
 </resources>

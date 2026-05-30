@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" android:hardwareAccelerated="false">
   <uses-permission android:name="android.permission.VIBRATE"/>
   <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
+  <!-- Required to download optional language packs (dictionaries) from GitHub. -->
+  <uses-permission android:name="android.permission.INTERNET"/>
 
   <application android:label="@string/app_name" android:allowBackup="true" android:icon="@mipmap/ic_launcher" android:hardwareAccelerated="false">
     <service android:name="com.overboard.keyboard.Keyboard2" android:label="@string/app_name" android:permission="android.permission.BIND_INPUT_METHOD" android:exported="true" android:directBootAware="true">
@@ -9,6 +11,20 @@
         <action android:name="android.view.InputMethod"/>
       </intent-filter>
       <meta-data android:name="android.view.im" android:resource="@xml/method"/>
+    </service>
+
+    <!-- Maps physical hardware keys (e.g. the programmable key) to actions
+         globally. Implemented as an AccessibilityService because an IME only
+         receives key events while its input view is showing. -->
+    <service android:name="com.overboard.keyboard.KeyActionService"
+        android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
+        android:label="@string/key_action_service_label"
+        android:exported="true">
+      <intent-filter>
+        <action android:name="android.accessibilityservice.AccessibilityService"/>
+      </intent-filter>
+      <meta-data android:name="android.accessibilityservice"
+          android:resource="@xml/key_action_service"/>
     </service>
 
     <activity android:name="com.overboard.keyboard.SettingsActivity" android:icon="@mipmap/ic_launcher" android:theme="@style/settingsTheme" android:exported="true" android:directBootAware="true">
@@ -29,6 +45,16 @@
         <action android:name="android.intent.action.MAIN"/>
       </intent-filter>
     </activity>
+
+    <provider
+        android:name="androidx.core.content.FileProvider"
+        android:authorities="${applicationId}.fileprovider"
+        android:exported="false"
+        android:grantUriPermissions="true">
+      <meta-data
+          android:name="android.support.FILE_PROVIDER_PATHS"
+          android:resource="@xml/file_paths" />
+    </provider>
   </application>
 
   <!-- To query enabled input methods for voice IME detection -->

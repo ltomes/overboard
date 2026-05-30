@@ -164,6 +164,10 @@ public final class Autocapitalisation
     _should_disable_shift = might_disable;
     // The callback must be delayed because [getCursorCapsMode] would sometimes
     // be called before the editor finished handling the previous event.
+    // Remove any pending callback first to avoid stacking delayed callbacks
+    // during rapid typing, which would each hit a potentially stale
+    // InputConnection.
+    _handler.removeCallbacks(delayed_callback);
     _handler.postDelayed(delayed_callback, 50);
   }
 

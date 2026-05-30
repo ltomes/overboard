@@ -29,6 +29,7 @@
     <item>@string/pref_numpad_layout_e_low_first</item>
   </string-array>
   <string-array name="pref_theme_entries">
+    <item>@string/pref_theme_e_showcase</item>
     <item>@string/pref_theme_e_system</item>
     <item>@string/pref_theme_e_pbtfansxray</item>
     <item>@string/pref_theme_e_mitotty</item>
@@ -53,6 +54,7 @@
     <item>@string/pref_theme_e_epaperblack</item>
   </string-array>
   <string-array name="pref_theme_values">
+    <item>showcase</item>
     <item>system</item>
     <item>pbtfansxray</item>
     <item>mitotty</item>
@@ -151,5 +153,17 @@
   <string-array name="pref_handedness_values">
     <item>left</item>
     <item>right</item>
+  </string-array>
+  <string-array name="pref_physical_key_action_entries">
+    <item>@string/pref_physical_key_action_e_none</item>
+    <item>@string/pref_physical_key_action_e_voice</item>
+    <item>@string/pref_physical_key_action_e_ha_dashboard</item>
+    <item>@string/pref_physical_key_action_e_ha_assist</item>
+  </string-array>
+  <string-array name="pref_physical_key_action_values">
+    <item>none</item>
+    <item>voice</item>
+    <item>ha_dashboard</item>
+    <item>ha_assist</item>
   </string-array>
 </resources>
