@@ -110,10 +110,15 @@ public final class CurrentlyTypedWord
   void refresh_current_word()
   {
     _refresh_pending = false;
-    if (_has_selection)
+    if (_has_selection || _ic == null)
       set_current_word("");
     else
-      set_current_word(_ic.getTextBeforeCursor(10, 0));
+    {
+      // The InputConnection can be stale or disconnected; a throw here would
+      // propagate out of onUpdateSelection and crash the IME.
+      try { set_current_word(_ic.getTextBeforeCursor(10, 0)); }
+      catch (Exception e) { set_current_word(""); }
+    }
   }
 
   /** Refresh the current word by immediately querying the editor. */

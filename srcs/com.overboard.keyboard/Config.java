@@ -156,9 +156,9 @@ public final class Config
     // The option value uses an unnamed scale where the baseline is around 25.
     float dpi_ratio = Math.max(dm.xdpi, dm.ydpi) / Math.min(dm.xdpi, dm.ydpi);
     float swipe_scaling = Math.min(dm.widthPixels, dm.heightPixels) / 10.f * dpi_ratio;
-    float swipe_dist_value = Float.valueOf(_prefs.getString("swipe_dist", "15"));
+    float swipe_dist_value = parse_float_pref("swipe_dist", 15f);
     swipe_dist_px = swipe_dist_value / 25.f * swipe_scaling;
-    float slider_sensitivity = Float.valueOf(_prefs.getString("slider_sensitivity", "30")) / 100.f;
+    float slider_sensitivity = parse_float_pref("slider_sensitivity", 30f) / 100.f;
     slide_step_px = slider_sensitivity * swipe_scaling;
     vibrate_custom = _prefs.getBoolean("vibrate_custom", false);
     vibrate_duration = _prefs.getInt("vibrate_duration", 20);
@@ -171,7 +171,7 @@ public final class Config
     // Label brightness is used as the alpha channel
     labelBrightness = _prefs.getInt("label_brightness", 100) * 255 / 100;
     // Keyboard opacity
-    keyboardOpacity = _prefs.getInt("keyboard_opacity", 100) * 255 / 100;
+    keyboardOpacity = _prefs.getInt("keyboard_opacity", 9) * 255 / 100;
     keyOpacity = _prefs.getInt("key_opacity", 100) * 255 / 100;
     keyActivatedOpacity = _prefs.getInt("key_activated_opacity", 100) * 255 / 100;
     // keyboard border settings
@@ -191,7 +191,7 @@ public final class Config
     characterSize =
       _prefs.getFloat("character_size", 1.15f)
       * characterSizeScale;
-    theme = getThemeId(res, _prefs.getString("theme", "system"));
+    theme = getThemeId(res, _prefs.getString("theme", "showcase"));
     autocapitalisation = _prefs.getBoolean("autocapitalisation", true);
     change_method_key_replacement = get_change_method_key_replacement(_prefs);
     extra_keys_param = ExtraKeysPreference.get_extra_keys(_prefs);
@@ -199,9 +199,9 @@ public final class Config
     selected_number_layout = NumberLayout.of_string(_prefs.getString("number_entry_layout", "pin"));
     current_layout_narrow = _prefs.getInt("current_layout_portrait", 0);
     current_layout_wide = _prefs.getInt("current_layout_landscape", 0);
-    circle_sensitivity = Integer.valueOf(_prefs.getString("circle_sensitivity", "2"));
+    circle_sensitivity = parse_int_pref("circle_sensitivity", 2);
     clipboard_history_enabled = _prefs.getBoolean("clipboard_history_enabled", false);
-    clipboard_history_duration = Integer.parseInt(_prefs.getString("clipboard_history_duration", "5"));
+    clipboard_history_duration = parse_int_pref("clipboard_history_duration", 5);
     space_bar_auto_complete = _prefs.getBoolean("space_bar_auto_complete", false);
     // Overlay features
     labelOutline = _prefs.getBoolean("label_outline", true);
@@ -210,7 +210,7 @@ public final class Config
     idleFadeEnabled = _prefs.getBoolean("idle_fade_enabled", true);
     idleFadeTimeout = _prefs.getInt("idle_fade_timeout", 5) * 1000L;
     collapseButtonEnabled = _prefs.getBoolean("collapse_button", true);
-    handedness = "left".equals(_prefs.getString("handedness", "right"))
+    handedness = "left".equals(_prefs.getString("handedness", "left"))
         ? Handedness.LEFT : Handedness.RIGHT;
 
     float screen_width_dp = dm.widthPixels / dm.density;
@@ -242,6 +242,37 @@ public final class Config
     _prefs.edit().putBoolean("clipboard_history_enabled", e).apply();
   }
 
+  /** Parse a string preference as an int, falling back to [def] when the
+      stored value is missing or non-numeric.  A corrupted/restored preference
+      must never throw out of [refresh], which runs on the onStartInputView
+      path — an uncaught NumberFormatException there locks up input. */
+  private int parse_int_pref(String pref_name, int def)
+  {
+    return parse_int(_prefs.getString(pref_name, Integer.toString(def)), def);
+  }
+
+  /** [parse_int_pref] for float-valued string preferences. */
+  private float parse_float_pref(String pref_name, float def)
+  {
+    return parse_float(_prefs.getString(pref_name, Float.toString(def)), def);
+  }
+
+  /** Parse [value] as an int, returning [def] on null/empty/non-numeric input.
+      Package-private and static (no [_prefs] dependency) so the fallback is
+      unit-testable without an Android runtime. */
+  static int parse_int(String value, int def)
+  {
+    try { return Integer.parseInt(value); }
+    catch (Exception e) { return def; }
+  }
+
+  /** [parse_int] for floats. */
+  static float parse_float(String value, float def)
+  {
+    try { return Float.parseFloat(value); }
+    catch (Exception e) { return def; }
+  }
+
   private float get_dip_pref(DisplayMetrics dm, String pref_name, float def)
   {
     float value;
@@ -266,11 +297,22 @@ public final class Config
     return get_dip_pref(dm, pref_base_name + suffix, def);
   }
 
+  /** Themes cycled through by the "showcase" option. */
+  private static final int[] SHOWCASE_THEMES = {
+    R.style.MitoTTY, R.style.MitoPulse, R.style.MitoMT3,
+    R.style.PBTfansXRay, R.style.TaiHaoMiami
+  };
+  private static int _showcaseIndex = 0;
+
   public static int getThemeId(Resources res, String theme_name)
   {
     int night_mode = res.getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
     switch (theme_name)
     {
+      case "showcase":
+        int t = SHOWCASE_THEMES[_showcaseIndex % SHOWCASE_THEMES.length];
+        _showcaseIndex++;
+        return t;
       case "light": return R.style.Light;
       case "black": return R.style.Black;
       case "altblack": return R.style.AltBlack;
@@ -349,9 +391,9 @@ public final class Config
   public static void migrate(SharedPreferences prefs)
   {
     int saved_version = prefs.getInt("version", 0);
-    Logs.debug_config_migration(saved_version, CONFIG_VERSION);
     if (saved_version == CONFIG_VERSION)
       return;
+    Logs.debug_config_migration(saved_version, CONFIG_VERSION);
     SharedPreferences.Editor e = prefs.edit();
     e.putInt("version", CONFIG_VERSION);
     // Migrations might run on an empty [prefs] for new installs, in this case

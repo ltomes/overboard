@@ -40,6 +40,20 @@ public final class Utils
     dialog.show();
   }
 
+  /** Show a dialog as a system overlay window (requires SYSTEM_ALERT_WINDOW).
+      Used in overlay mode: the IME window is a non-visible 1px placeholder, so
+      a [TYPE_APPLICATION_ATTACHED_DIALOG] attached to its token never appears.
+      A standalone overlay window does not depend on the IME window. */
+  public static void show_dialog_as_overlay(AlertDialog dialog)
+  {
+    Window win = dialog.getWindow();
+    win.setType(VERSION.SDK_INT >= 26
+        ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+        : WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
+    win.addFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
+    dialog.show();
+  }
+
   public static String read_all_utf8(InputStream inp) throws Exception
   {
     InputStreamReader reader = new InputStreamReader(inp, "UTF-8");

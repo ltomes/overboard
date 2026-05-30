@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 import java.util.ArrayList;
@@ -37,7 +38,17 @@ public final class ClipboardHistoryView extends NonScrollListView
       the list of pinned clipboards. */
   public void pin_entry(int pos)
   {
-    ClipboardPinView v = (ClipboardPinView)((ViewGroup)getParent().getParent()).findViewById(R.id.clipboard_pin_view);
+    // [pos] can be stale if the history changed between binding and the tap;
+    // the parent-chain lookup can also miss. Guard both to avoid crashing.
+    if (pos < 0 || pos >= _history.size())
+      return;
+    ViewParent p1 = getParent();
+    ViewParent p2 = (p1 != null) ? p1.getParent() : null;
+    if (!(p2 instanceof ViewGroup))
+      return;
+    ClipboardPinView v = (ClipboardPinView)((ViewGroup)p2).findViewById(R.id.clipboard_pin_view);
+    if (v == null)
+      return;
     String clip = _history.get(pos);
     v.add_entry(clip);
     _service.remove_history_entry(clip);
@@ -46,6 +57,8 @@ public final class ClipboardHistoryView extends NonScrollListView
   /** Send the specified entry to the editor. */
   public void paste_entry(int pos)
   {
+    if (pos < 0 || pos >= _history.size())
+      return;
     ClipboardHistoryService.paste(_history.get(pos));
   }
 

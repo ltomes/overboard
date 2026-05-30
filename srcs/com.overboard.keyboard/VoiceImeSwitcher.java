@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.inputmethodservice.InputMethodService;
+import android.provider.Settings;
 import android.os.Build.VERSION;
 import android.view.inputmethod.InputMethodInfo;
 import android.view.inputmethod.InputMethodManager;
@@ -73,7 +74,14 @@ class VoiceImeSwitcher
       .create();
     if (ime_display_names.size() == 0)
       dialog.setMessage(ims.getResources().getString(R.string.toast_no_voice_input));
-    Utils.show_dialog_on_ime(dialog, ims.getWindow().getWindow().getDecorView().getWindowToken());
+    // In overlay mode the IME window is a non-visible 1px placeholder, so a
+    // dialog attached to its token never appears (this is why voice typing
+    // silently did nothing). Show the chooser as a system overlay instead.
+    if (Settings.canDrawOverlays(ims))
+      Utils.show_dialog_as_overlay(dialog);
+    else
+      Utils.show_dialog_on_ime(dialog,
+          ims.getWindow().getWindow().getDecorView().getWindowToken());
   }
 
   static void switch_input_method(InputMethodService ims, IME ime)

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
   <PreferenceCategory android:title="@string/pref_category_style">
-    <com.overboard.keyboard.prefs.ThemePreference android:key="theme" android:title="@string/pref_theme" android:summary="%s" android:defaultValue="system"/>
+    <com.overboard.keyboard.prefs.ThemePreference android:key="theme" android:title="@string/pref_theme" android:summary="%s" android:defaultValue="showcase"/>
     <com.overboard.keyboard.prefs.IntSlideBarPreference android:key="label_brightness" android:title="@string/pref_label_brightness" android:summary="%s%%" android:defaultValue="100" min="50" max="100"/>
-    <com.overboard.keyboard.prefs.IntSlideBarPreference android:key="keyboard_opacity" android:title="@string/pref_keyboard_opacity" android:summary="%s%%" android:defaultValue="100" min="0" max="100"/>
+    <com.overboard.keyboard.prefs.IntSlideBarPreference android:key="keyboard_opacity" android:title="@string/pref_keyboard_opacity" android:summary="%s%%" android:defaultValue="9" min="0" max="100"/>
     <com.overboard.keyboard.prefs.IntSlideBarPreference android:key="key_opacity" android:title="@string/pref_key_opacity" android:summary="%s%%" android:defaultValue="100" min="0" max="100"/>
     <com.overboard.keyboard.prefs.IntSlideBarPreference android:key="key_activated_opacity" android:title="@string/pref_key_activated_opacity" android:summary="%s%%" android:defaultValue="100" min="0" max="100"/>
     <PreferenceScreen android:title="@string/pref_margin_bottom_title">
@@ -32,13 +32,21 @@
     <com.overboard.keyboard.prefs.SlideBarPreference android:key="custom_border_line_width" android:title="@string/pref_border_width_title" android:summary="%sdp" android:defaultValue="0" min="0" max="5" android:dependency="border_config"/>
   </PreferenceCategory>
   <PreferenceCategory android:title="@string/pref_category_overlay">
-    <ListPreference android:key="handedness" android:title="@string/pref_handedness_title" android:summary="%s" android:defaultValue="right" android:entries="@array/pref_handedness_entries" android:entryValues="@array/pref_handedness_values"/>
+    <ListPreference android:key="handedness" android:title="@string/pref_handedness_title" android:summary="%s" android:defaultValue="left" android:entries="@array/pref_handedness_entries" android:entryValues="@array/pref_handedness_values"/>
     <CheckBoxPreference android:key="label_outline" android:title="@string/pref_label_outline_title" android:summary="@string/pref_label_outline_summary" android:defaultValue="true"/>
     <CheckBoxPreference android:key="label_shadow" android:title="@string/pref_label_shadow_title" android:summary="@string/pref_label_shadow_summary" android:defaultValue="false"/>
     <CheckBoxPreference android:key="top_gradient" android:title="@string/pref_top_gradient_title" android:summary="@string/pref_top_gradient_summary" android:defaultValue="false"/>
     <CheckBoxPreference android:key="idle_fade_enabled" android:title="@string/pref_idle_fade_title" android:summary="@string/pref_idle_fade_summary" android:defaultValue="true"/>
     <com.overboard.keyboard.prefs.IntSlideBarPreference android:key="idle_fade_timeout" android:dependency="idle_fade_enabled" android:title="@string/pref_idle_fade_timeout_title" android:summary="%ss" android:defaultValue="5" min="1" max="30"/>
     <CheckBoxPreference android:key="collapse_button" android:title="@string/pref_collapse_button_title" android:summary="@string/pref_collapse_button_summary" android:defaultValue="true"/>
+  </PreferenceCategory>
+  <PreferenceCategory android:title="@string/pref_category_physical_keys">
+    <CheckBoxPreference android:key="physical_keys_enabled" android:title="@string/pref_physical_keys_enabled_title" android:summary="@string/pref_physical_keys_enabled_summary" android:defaultValue="true"/>
+    <CheckBoxPreference android:key="physical_key_voice_when_open" android:dependency="physical_keys_enabled" android:title="@string/pref_physical_key_voice_when_open_title" android:summary="@string/pref_physical_key_voice_when_open_summary" android:defaultValue="true"/>
+    <ListPreference android:key="physical_key_single_tap" android:dependency="physical_keys_enabled" android:title="@string/pref_physical_key_single_tap_title" android:summary="%s" android:defaultValue="none" android:entries="@array/pref_physical_key_action_entries" android:entryValues="@array/pref_physical_key_action_values"/>
+    <ListPreference android:key="physical_key_double_tap" android:dependency="physical_keys_enabled" android:title="@string/pref_physical_key_double_tap_title" android:summary="%s" android:defaultValue="ha_dashboard" android:entries="@array/pref_physical_key_action_entries" android:entryValues="@array/pref_physical_key_action_values"/>
+    <ListPreference android:key="physical_key_long_press" android:dependency="physical_keys_enabled" android:title="@string/pref_physical_key_long_press_title" android:summary="%s" android:defaultValue="ha_assist" android:entries="@array/pref_physical_key_action_entries" android:entryValues="@array/pref_physical_key_action_values"/>
+    <EditTextPreference android:key="physical_key_keycode" android:dependency="physical_keys_enabled" android:title="@string/pref_physical_key_keycode_title" android:summary="@string/pref_physical_key_keycode_summary" android:defaultValue="131"/>
   </PreferenceCategory>
   <PreferenceCategory android:title="@string/pref_category_typing">
     <ListPreference android:key="swipe_dist" android:title="@string/pref_swipe_dist_title" android:summary="@string/pref_swipe_dist_summary" android:defaultValue="15" android:entries="@array/pref_swipe_dist_entries" android:entryValues="@array/pref_swipe_dist_values"/>
@@ -74,5 +82,9 @@
   </PreferenceCategory>
   <PreferenceCategory android:title="@string/pref_category_clipboard">
     <ListPreference android:key="clipboard_history_duration" android:title="@string/pref_clipboard_history_duration" android:summary="%s" android:defaultValue="5" android:entries="@array/pref_clipboard_duration_entries" android:entryValues="@array/pref_clipboard_duration_values"/>
+  </PreferenceCategory>
+  <PreferenceCategory android:key="category_debug" android:title="@string/pref_category_debug">
+    <CheckBoxPreference android:key="debug_logging" android:title="@string/pref_debug_logging_title" android:summary="@string/pref_debug_logging_summary" android:defaultValue="false"/>
+    <Preference android:key="share_debug_log" android:title="@string/pref_share_log_title" android:summary="@string/pref_share_log_summary"/>
   </PreferenceCategory>
 </PreferenceScreen>

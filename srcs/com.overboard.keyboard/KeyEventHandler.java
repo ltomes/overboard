@@ -101,6 +101,7 @@ public final class KeyEventHandler
   {
     if (key == null)
       return;
+    Logs.debug("key_up: " + key);
     Pointers.Modifiers old_mods = _mods;
     update_meta_state(mods);
     switch (key.getKind())
@@ -212,6 +213,11 @@ public final class KeyEventHandler
 
   void send_key_down_up(int keyCode)
   {
+    if (keyCode == 0)
+    {
+      Logs.debug("send_key_down_up: ignoring KEYCODE_UNKNOWN (0)");
+      return;
+    }
     send_key_down_up(keyCode, _meta_state);
   }
 
@@ -226,12 +232,20 @@ public final class KeyEventHandler
   {
     InputConnection conn = _recv.getCurrentInputConnection();
     if (conn == null)
+    {
+      Logs.debug("send_keyevent: no InputConnection, dropping keycode=" + eventCode);
       return;
+    }
     try
     {
-      conn.sendKeyEvent(new KeyEvent(1, 1, eventAction, eventCode, 0,
+      boolean ok = conn.sendKeyEvent(new KeyEvent(1, 1, eventAction, eventCode, 0,
             metaState, KeyCharacterMap.VIRTUAL_KEYBOARD, 0,
             KeyEvent.FLAG_SOFT_KEYBOARD | KeyEvent.FLAG_KEEP_TOUCH_MODE));
+      if (!ok)
+      {
+        Logs.debug("send_keyevent: InputConnection rejected keycode=" + eventCode);
+        return;
+      }
     }
     catch (Exception e)
     {
@@ -250,12 +264,19 @@ public final class KeyEventHandler
   {
     InputConnection conn = _recv.getCurrentInputConnection();
     if (conn == null)
+    {
+      Logs.debug("send_text: no InputConnection, dropping text");
       return;
+    }
     _autocap.typed(text);
     _typedword.typed(text);
     try
     {
-      conn.commitText(text, 1);
+      if (!conn.commitText(text, 1))
+      {
+        Logs.debug("send_text: InputConnection rejected text");
+        return;
+      }
     }
     catch (Exception e)
     {
@@ -273,9 +294,15 @@ public final class KeyEventHandler
     try
     {
       conn.beginBatchEdit();
-      conn.deleteSurroundingText(remove_length, 0);
-      conn.commitText(new_text, 1);
-      conn.endBatchEdit();
+      try
+      {
+        conn.deleteSurroundingText(remove_length, 0);
+        conn.commitText(new_text, 1);
+      }
+      finally
+      {
+        conn.endBatchEdit();
+      }
     }
     catch (Exception e)
     {
